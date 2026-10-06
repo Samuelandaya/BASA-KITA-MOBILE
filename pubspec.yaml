@@ -61,11 +61,11 @@ flutter:
       fonts:
         - asset: assets/fonts/LuckiestGuy-Regular.ttf
 
-# App icon: the BASA-KITA book mascot. Regenerate with: dart run flutter_launcher_icons
+# App icon: the full BASA-KITA logo (1024 px). Regenerate with: dart run flutter_launcher_icons
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path: "assets/icon/app_icon.png"
   remove_alpha_ios: true
   adaptive_icon_background: "#FFF9ED"
-  adaptive_icon_foreground: "assets/images/logo.png"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"

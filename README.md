@@ -89,8 +89,8 @@ learner level, saved data), and a web build that was opened in a phone-sized bro
 
 **Not checked:** running on a real phone or emulator, `flutter build apk` / `ios` (this build machine has no Android
 SDK or Xcode), and the camera, microphone, speech voices, AR and notifications, which need real hardware.
-Test those first on a device. The app icon is made from the website's small logo (121 px), so replace
-`assets/images/logo.png` with a larger one and run `dart run flutter_launcher_icons`.
+Test those first on a device. The app icon comes from the full-size logo in `assets/icon/app_icon.png`
+(1024 px); after changing it, run `dart run flutter_launcher_icons`.
 
 Not part of this front end: a backend, real push notifications from a server, and an offline copy of the AR viewer
 (it loads from the internet).
