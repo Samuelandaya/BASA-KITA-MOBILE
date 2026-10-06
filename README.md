@@ -34,7 +34,7 @@ learner · `admin@basakita.ph` teacher dashboard.
 | Library | Heart to save, Saved, Reading History, progress %, Continue Reading, My Stories |
 | Learn | 20 letter sounds, Marungko Practice, English Phonics Practice |
 | Cards | 18 flashcards with a **3D object you can turn** and an **AR button** |
-| Scan | Camera or gallery, reads the page on the phone, finds the book, reads it aloud. Also finds a flashcard from a photo |
+| Scan | **Scan a Book** (Books and Home): camera or gallery, reads the page on the phone, finds the book, reads it aloud. **Scan a Flash Card** (its own page, from the Cards tab): finds a flashcard from a photo and opens it |
 | Create | Write stories page by page with pictures, read them aloud, edit them |
 | Me | Progress and learner level, Settings (6 voices, volume, sound effects, music, parent PIN, daily reminder), Profile, Help |
 | Admin | Overview, Learners, Books, Reports (copy CSV), add learner, add storybook |
@@ -79,7 +79,9 @@ Permissions are already set in `android/app/src/main/AndroidManifest.xml` and `i
 
 ## Connecting the backend later
 
-Only `lib/api/auth.dart` (sign in, sign up, verify, reset) calls a server today. The rest of a learner's data lives in
+Only `lib/api/auth.dart` (sign in, sign up, verify, reset) can call a server. It stays in demo mode until you give the
+app a server address: `flutter run --dart-define=API_URL=https://yourdomain/api` (same for `flutter build apk`).
+Keeping the phone logged in after a restart (a token or a cookie) waits for the backend's choice. The rest of a learner's data lives in
 `lib/state/app_state.dart`. The endpoints and data shapes are the same as the website's, listed in
 [`docs/BACKEND.md` in the website repo](https://github.com/Samuelandaya/BASA-KITA/blob/claude/determined-goodall-vbxz25/docs/BACKEND.md).
 

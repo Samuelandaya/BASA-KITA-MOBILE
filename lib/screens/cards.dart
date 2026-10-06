@@ -217,7 +217,7 @@ class _FlashcardsState extends State<FlashcardsScreen> {
             ),
           if (step < 3) Btn('Next step', icon: Icons.arrow_forward, expand: true, onPressed: () => goStep(step + 1)),
           const SizedBox(height: 4),
-          Btn('Scan a flashcard', icon: Icons.photo_camera, kind: BtnKind.blue, expand: true, onPressed: () => context.push('/scan?mode=card')),
+          Btn('Scan a flashcard', icon: Icons.photo_camera, kind: BtnKind.blue, expand: true, onPressed: () => context.push('/scan-card')),
           if (stars.contains(key)) const SizedBox.shrink(),
         ]),
       ),

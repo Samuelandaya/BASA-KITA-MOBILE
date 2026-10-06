@@ -1,4 +1,5 @@
 import '../state/models.dart';
+import 'client.dart';
 
 /// Account service. The backend decides each account's role ('learner' or 'admin');
 /// the app only reads `user.role` and opens the matching home screen.
@@ -8,7 +9,8 @@ import '../state/models.dart';
 ///  - sam@basakita.ph is a returning learner with sample reading history
 ///  - any other email is a brand-new learner with no history
 ///
-/// To connect a server, replace the bodies below with HTTP calls that return the same [User].
+/// With `--dart-define=API_URL=https://yourdomain/api` the calls below go to the real server
+/// (endpoints and shapes: docs/BACKEND.md in the website repo). With no API_URL the demo stand-ins run.
 class AuthApi {
   static const _adminEmails = ['admin@basakita.ph'];
   static const _returningEmails = ['sam@basakita.ph'];
@@ -26,6 +28,7 @@ class AuthApi {
     final clean = email.trim().toLowerCase();
     if (clean.isEmpty || password.isEmpty) throw 'Please enter your email and password.';
     if (!_email.hasMatch(clean)) throw 'Please enter a valid email address.';
+    if (api.connected) return _user(await api.post('/auth/login', {'email': clean, 'password': password}));
     await _pause();
     final handle = clean.split('@').first;
     if (_adminEmails.contains(clean)) {
@@ -38,6 +41,9 @@ class AuthApi {
   }
 
   static Future<User> signUp({required String name, required String username, required String email, required String password}) async {
+    if (api.connected) {
+      return _user(await api.post('/auth/signup', {'name': name, 'username': username, 'email': email, 'password': password}));
+    }
     await _pause();
     final parts = name.trim().split(RegExp(r'\s+'));
     return User(
@@ -51,12 +57,36 @@ class AuthApi {
 
   /// Demo: any 6-digit code works.
   static Future<User> verifyEmail(User user, String code) async {
+    if (api.connected) return _user(await api.post('/auth/verify', {'email': user.email, 'code': code}));
     await _pause();
     user.role = 'learner';
     return user;
   }
 
-  static Future<void> resendCode(String email) => _pause();
-  static Future<void> requestPasswordReset(String email) => _pause();
-  static Future<void> resetPassword(String? token, String password) => _pause();
+  static Future<void> resendCode(String email) async {
+    if (api.connected) {
+      await api.post('/auth/resend-code', {'email': email});
+    } else {
+      await _pause();
+    }
+  }
+
+  static Future<void> requestPasswordReset(String email) async {
+    if (api.connected) {
+      await api.post('/auth/forgot-password', {'email': email});
+    } else {
+      await _pause();
+    }
+  }
+
+  /// [token] comes from the link in the reset email (`basakita://reset?token=...`).
+  static Future<void> resetPassword(String? token, String password) async {
+    if (api.connected) {
+      await api.post('/auth/reset-password', {'token': token, 'password': password});
+    } else {
+      await _pause();
+    }
+  }
+
+  static User _user(Map<String, dynamic> body) => User.fromJson((body['user'] as Map).cast<String, dynamic>());
 }

@@ -56,7 +56,7 @@ class AppPage extends StatelessWidget {
           padding: const EdgeInsets.only(top: 4),
           child: Row(children: [
             Expanded(child: Text(title!, style: T.head(26, weight: FontWeight.w700, height: 1.1))),
-            if (trailing != null) trailing!,
+            ?trailing,
           ]),
         ),
       if (subtitle != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(subtitle!, style: T.body(14, color: C.muted))),
@@ -65,7 +65,7 @@ class AppPage extends StatelessWidget {
       padding: padding,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (!back && banner == null && header.isNotEmpty) const SizedBox(height: 38),
-        if (back) BackLink(),
+        if (back) const BackLink(),
         ...header,
         if (header.isNotEmpty) const SizedBox(height: 14),
         scroll ? child : Expanded(child: child),
@@ -83,7 +83,7 @@ class AppPage extends StatelessWidget {
 
 class BackLink extends StatelessWidget {
   final String label;
-  BackLink({super.key, this.label = 'Back'});
+  const BackLink({super.key, this.label = 'Back'});
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(top: 40, bottom: 4),
