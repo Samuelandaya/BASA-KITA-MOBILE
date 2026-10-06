@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD9A8"/><stop offset="1" stop-color="#FFF1DC"/></linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#sky)"/>
+  <circle cx="320" cy="70" r="30" fill="#FFB36B" opacity=".8"/>
+  <path d="M0 170 C100 150 220 166 400 150 V240 H0Z" fill="#8ACF7A"/>
+  <path d="M0 196 C140 186 260 200 400 190 V240 H0Z" fill="#6BBE62"/>
+  <!-- park gate -->
+  <rect x="40" y="70" width="14" height="118" rx="4" fill="#4F6273"/>
+  <rect x="166" y="70" width="14" height="118" rx="4" fill="#4F6273"/>
+  <path d="M40 76 Q110 30 180 76" stroke="#4F6273" stroke-width="10" fill="none"/>
+  <g stroke="#4F6273" stroke-width="5"><line x1="70" y1="78" x2="70" y2="186"/><line x1="94" y1="66" x2="94" y2="186"/><line x1="118" y1="62" x2="118" y2="186"/><line x1="142" y1="66" x2="142" y2="186"/></g>
+  <rect x="78" y="40" width="64" height="20" rx="6" fill="#46B97B"/>
+  <text x="110" y="55" text-anchor="middle" font-family="Fredoka, Nunito, sans-serif" font-weight="700" font-size="13" fill="#fff">PARK</text>
+  <!-- bushes -->
+  <circle cx="340" cy="176" r="30" fill="#4DB866"/><circle cx="372" cy="170" r="26" fill="#5CC774"/>
+  <!-- puppy -->
+  <ellipse cx="252" cy="204" rx="54" ry="8" fill="#000" opacity=".12"/>
+  <ellipse cx="262" cy="176" rx="44" ry="28" fill="#D9A066"/>
+  <rect x="228" y="186" width="14" height="22" rx="7" fill="#C48A52"/>
+  <rect x="280" y="186" width="14" height="22" rx="7" fill="#C48A52"/>
+  <path d="M302 166 q22 -10 18 -28" stroke="#D9A066" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <circle cx="226" cy="140" r="34" fill="#E2B07A"/>
+  <ellipse cx="196" cy="138" rx="12" ry="24" fill="#8C5A33" transform="rotate(18 196 138)"/>
+  <ellipse cx="256" cy="138" rx="12" ry="24" fill="#8C5A33" transform="rotate(-18 256 138)"/>
+  <ellipse cx="226" cy="156" rx="18" ry="13" fill="#F3D2AA"/>
+  <circle cx="214" cy="134" r="5" fill="#183B5B"/><circle cx="238" cy="134" r="5" fill="#183B5B"/>
+  <circle cx="216" cy="132" r="1.6" fill="#fff"/><circle cx="240" cy="132" r="1.6" fill="#fff"/>
+  <path d="M208 124 q6 -4 12 0 M232 124 q6 -4 12 0" stroke="#8C5A33" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <ellipse cx="226" cy="150" rx="6" ry="4.5" fill="#3B2A20"/>
+  <path d="M218 160 q8 -4 16 0" stroke="#3B2A20" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <rect x="208" y="168" width="36" height="7" rx="3.5" fill="#2F6FA8"/>
+  <circle cx="226" cy="182" r="7" fill="#F6C85F"/>
+  <!-- teardrop -->
+  <path d="M248 140 q4 8 0 12 q-4 -4 0 -12z" fill="#7FC4F2"/>
+</svg>

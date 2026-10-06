@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <circle cx="60" cy="60" r="56" fill="#1E3A8A"/>
+  <g fill="#FFE27A"><circle cx="24" cy="30" r="2"/><circle cx="96" cy="26" r="1.6"/><circle cx="100" cy="70" r="1.8"/><circle cx="18" cy="74" r="1.4"/></g>
+  <!-- books -->
+  <rect x="30" y="88" width="60" height="10" rx="3" fill="#E76F51"/>
+  <rect x="34" y="80" width="52" height="9" rx="3" fill="#3E89C9"/>
+  <!-- owl body -->
+  <ellipse cx="60" cy="60" rx="24" ry="26" fill="#8C6239"/>
+  <ellipse cx="60" cy="66" rx="15" ry="16" fill="#E9C99B"/>
+  <path d="M42 40 l-4 -10 10 6z M78 40 l4 -10 -10 6z" fill="#8C6239"/>
+  <circle cx="50" cy="50" r="10" fill="#fff"/><circle cx="70" cy="50" r="10" fill="#fff"/>
+  <circle cx="51" cy="51" r="5" fill="#263238"/><circle cx="69" cy="51" r="5" fill="#263238"/>
+  <circle cx="52.5" cy="49.5" r="1.6" fill="#fff"/><circle cx="70.5" cy="49.5" r="1.6" fill="#fff"/>
+  <circle cx="50" cy="50" r="11" fill="none" stroke="#F6C85F" stroke-width="2"/><circle cx="70" cy="50" r="11" fill="none" stroke="#F6C85F" stroke-width="2"/>
+  <path d="M61 50 h-2" stroke="#F6C85F" stroke-width="2"/>
+  <path d="M56 60 l4 6 4 -6z" fill="#FF7A22"/>
+  <!-- graduation cap -->
+  <path d="M40 30 l20 -9 20 9 -20 9z" fill="#263238"/>
+  <path d="M78 31 v9" stroke="#F6C85F" stroke-width="2"/><circle cx="78" cy="41" r="2" fill="#F6C85F"/>
+  <!-- open book in wings -->
+  <path d="M44 78 q16 -8 16 2 q0 -10 16 -2 v8 q-16 -6 -16 2 q0 -8 -16 -2z" fill="#fff" stroke="#C9D5DF"/>
+</svg>
