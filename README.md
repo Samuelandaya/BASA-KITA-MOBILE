@@ -4,6 +4,9 @@ The Android and iPhone app for BASA-KITA, written in **Dart with Flutter**. It u
 website (same colors, fonts, pictures, wording) and has every website feature plus the ones that need a phone:
 **AR flashcards, camera scanning of books and flashcards, offline-ready content and a real daily reminder.**
 
+A native Android version written in **Kotlin with Jetpack Compose** is in [`kotlin-android/`](kotlin-android/README.md).
+It has the same screens and features; build it with Android Studio or `./gradlew`.
+
 This is the **front end only**. Accounts, progress and settings are kept on the phone until a backend exists,
 exactly like the website's demo mode.
 
