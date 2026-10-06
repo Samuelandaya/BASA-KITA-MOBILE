@@ -59,8 +59,9 @@ The story, vocabulary and flashcard data and the 3D models are generated from th
 apps stay in step:
 
 ```bash
-node tools/gen-dart-data.mjs   # from the project root: rewrites mobile/lib/data/content.dart
-node tools/gen-glb.mjs         # from the project root: rewrites mobile/assets/models/*.glb
+# run in the website repo (Samuelandaya/BASA-KITA), with this repo checked out at ./mobile:
+node tools/gen-dart-data.mjs   # rewrites mobile/lib/data/content.dart
+node tools/gen-glb.mjs         # rewrites mobile/assets/models/*.glb
 ```
 
 ## Phone features and what they use
@@ -80,7 +81,7 @@ Permissions are already set in `android/app/src/main/AndroidManifest.xml` and `i
 
 Only `lib/api/auth.dart` (sign in, sign up, verify, reset) calls a server today. The rest of a learner's data lives in
 `lib/state/app_state.dart`. The endpoints and data shapes are the same as the website's, listed in
-[`../docs/BACKEND.md`](../docs/BACKEND.md).
+[`docs/BACKEND.md` in the website repo](https://github.com/Samuelandaya/BASA-KITA/blob/claude/determined-goodall-vbxz25/docs/BACKEND.md).
 
 ## Checked so far, and what is not
 
