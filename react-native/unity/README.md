@@ -58,7 +58,7 @@ The 3D models are the same `.glb` files as the Kotlin app (`Assets/StreamingAsse
 ## Export for the app (Android)
 
 1. *File → Build Profiles* (or *Build Settings*) → **Android** → *Switch Platform*. Add `Assets/Scenes/AR.unity` to the scene list.
-2. *Player Settings*: Scripting Backend **IL2CPP**, Target Architectures **ARM64** only, Minimum API level as Vuforia asks (it shows a warning if too low).
+2. *Player Settings*: Scripting Backend **IL2CPP**, Target Architectures **ARM64** only, Minimum API level **29** (Android 10; Vuforia Engine 11.4 will not build below it). *BASA-KITA → 1. Set up AR scene* sets all of this.
 3. Tick **Export Project** and export into `react-native/unity/builds/android`.
 4. In `react-native/unity/builds/android/unityLibrary/src/main/AndroidManifest.xml`, delete the `<intent-filter>…</intent-filter>` block.
 5. Rebuild the app: `cd react-native && npx expo prebuild --clean && npx expo run:android --device` (with the phone plugged in).

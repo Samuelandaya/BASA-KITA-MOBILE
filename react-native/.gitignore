@@ -53,3 +53,6 @@ yarn-error.*
 # Made by Vuforia on first use and holds a per-machine key; BASA-KITA -> 1. Set up AR scene recreates it
 /unity/BasaKitaAR/Assets/Resources/VuforiaConfiguration.asset
 /unity/BasaKitaAR/Assets/Resources/VuforiaConfiguration.asset.meta
+# Written into Assets/Resources by Vuforia and the test framework during a build
+/unity/BasaKitaAR/Assets/Resources/PerformanceTestRun*
+/unity/BasaKitaAR/Assets/Resources/alpha.shader*

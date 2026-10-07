@@ -102,8 +102,8 @@ public static class BasaKitaSetup
         PlayerSettings.SetApplicationIdentifier(android, "ph.basakita.rn");
         PlayerSettings.SetScriptingBackend(android, ScriptingImplementation.IL2CPP);
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-        // Same minimum as the React Native app (Vuforia itself needs 23).
-        PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
+        // Vuforia Engine 11.4 refuses to build below Android 10 (API 29); app.config.ts uses the same minimum.
+        PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
     }
 
