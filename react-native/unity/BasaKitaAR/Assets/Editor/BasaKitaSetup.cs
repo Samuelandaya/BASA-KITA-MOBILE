@@ -34,6 +34,10 @@ public static class BasaKitaSetup
         Create("GameObject/Vuforia Engine/Ground Plane/Ground Plane Stage");
         var planeFinder = Object.FindFirstObjectByType<PlaneFinderBehaviour>().gameObject;
         var stage = Object.FindFirstObjectByType<AnchorBehaviour>().gameObject;
+        // Vuforia's menu puts new objects under the selected one. Keep them at the top level:
+        // the bridge turns the Plane Finder off until AR starts, which would also hide a stage inside it.
+        planeFinder.transform.SetParent(null, true);
+        stage.transform.SetParent(null, true);
 
         var positioning = planeFinder.GetComponent<ContentPositioningBehaviour>();
         positioning.AnchorStage = stage.GetComponent<AnchorBehaviour>();
@@ -87,6 +91,7 @@ public static class BasaKitaSetup
 
     static void Create(string menuItem)
     {
+        Selection.activeGameObject = null;
         if (!EditorApplication.ExecuteMenuItem(menuItem))
             throw new System.Exception("Vuforia menu item not found: " + menuItem);
     }
