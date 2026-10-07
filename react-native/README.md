@@ -8,7 +8,10 @@ Set `EXPO_PUBLIC_API_URL` in `.env.local` to connect a backend later (same endpo
 
 ## Run it
 
-Needs Node 20+ and Android Studio (for the Android SDK and an emulator). Expo Go is **not** enough because the app has native code;
+Needs Node 20+, Android Studio (for the Android SDK and an emulator) and **Java 17**. Android Studio's own Java 25 is too new
+for the native build step (`configureCMakeDebug … A restricted method in java.lang.System has been called`), so point
+`JAVA_HOME` at a Java 17 first, for example the one Gradle downloaded:
+`export JAVA_HOME="$(/usr/libexec/java_home -v 17)"` on a Mac with Java 17 installed. Expo Go is **not** enough because the app has native code;
 `expo run:android` builds a development app instead.
 
 ```bash

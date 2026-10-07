@@ -11,7 +11,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'BASA-KITA',
   slug: 'basa-kita',
-  scheme: 'basakita',
+  // Own link name so it doesn't clash with the Kotlin and Flutter apps (they use basakita://).
+  scheme: 'basakita-rn',
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
