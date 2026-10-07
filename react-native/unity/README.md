@@ -37,8 +37,11 @@ The 3D models are the same `.glb` files as the Kotlin app (`Assets/StreamingAsse
 2. **Open the Unity project.** In Unity Hub: *Add → Add project from disk →* `react-native/unity/BasaKitaAR`.
    (`ProjectSettings/ProjectVersion.txt` is what tells Hub it is a Unity project and which editor to use: 6000.3.25f1.)
    Unity fills in the other project files and installs glTFast (for the .glb models) from `Packages/manifest.json`.
-3. **Add Vuforia.** Download the *Vuforia Engine package for Unity* (.tgz) from the developer portal and add it with
-   *Window → Package Manager → + → Add package from tarball*.
+3. **Add Vuforia.** `Packages/manifest.json` already asks for Vuforia Engine 11.4.4 as
+   `file:com.ptc.vuforia.engine-11.4.4.tgz`, but that file (about 138 MB) is too big for GitHub, so it is not committed.
+   Download *Download for Unity* (`add-vuforia-package-11-4-4.unitypackage`) from developer.vuforia.com → Downloads → SDK,
+   then either double-click it with the project open (Unity copies the .tgz into `Packages/`), or take
+   `com.ptc.vuforia.engine-11.4.4.tgz` out of it and put it in `BasaKitaAR/Packages/` yourself.
 4. **Vuforia settings.** *Window → Vuforia Configuration*: tick **Delayed Initialization** (the app starts Vuforia with the key).
 5. **Make the scene** (*File → New Scene*, save it as `Assets/Scenes/AR.unity`):
    - *GameObject → Vuforia Engine → AR Camera* (delete the normal Main Camera).

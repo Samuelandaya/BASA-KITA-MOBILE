@@ -48,3 +48,5 @@ yarn-error.*
 /unity/BasaKitaAR/UserSettings/
 /unity/BasaKitaAR/obj/
 .env.local
+# Vuforia Engine package (about 138 MB, over GitHub's file limit). Get it from the Vuforia developer portal; see unity/README.md
+/unity/BasaKitaAR/Packages/com.ptc.vuforia.engine-*.tgz
