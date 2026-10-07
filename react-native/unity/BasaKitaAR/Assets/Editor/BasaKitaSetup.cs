@@ -105,14 +105,20 @@ public static class BasaKitaSetup
         // Vuforia Engine 11.4 refuses to build below Android 10 (API 29); app.config.ts uses the same minimum.
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+        // Vuforia's Vulkan support is experimental; its camera feed is reliable on OpenGL ES 3.
+        PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
+        PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3 });
     }
 
-    // The app has its own launcher; Unity's would add a second app icon.
+    // The app owns these: Unity's launcher would add a second app icon, and its back-gesture
+    // setting clashes with the app's in the Android manifest merge.
     static void RemoveLauncherIntent()
     {
         var manifest = Path.Combine(ExportPath, "unityLibrary/src/main/AndroidManifest.xml");
         if (!File.Exists(manifest)) return;
         var xml = File.ReadAllText(manifest);
-        File.WriteAllText(manifest, Regex.Replace(xml, @"\s*<intent-filter>.*?</intent-filter>", "", RegexOptions.Singleline));
+        xml = Regex.Replace(xml, @"\s*<intent-filter>.*?</intent-filter>", "", RegexOptions.Singleline);
+        xml = Regex.Replace(xml, @"\s*android:enableOnBackInvokedCallback=""[a-z]+""", "");
+        File.WriteAllText(manifest, xml);
     }
 }
