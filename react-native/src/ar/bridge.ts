@@ -74,8 +74,8 @@ export function arMessage(state: FromUnity | { type: 'starting' }, eng: string, 
     case 'lost':
       return mode === 'card' ? 'Show the flashcard to the camera again.' : 'Move the phone slowly to find the table again.';
     case 'error':
-      return state.code === 'LICENSE'
-        ? 'AR needs a Vuforia license key. Ask a grown-up to add it in the app settings file.'
-        : 'AR could not start on this phone. You can still see the flashcard.';
+      if (state.code === 'LICENSE') return 'AR needs a Vuforia license key. Ask a grown-up to add it in the app settings file.';
+      if (state.code === 'NO_CARD_TARGET') return 'This flashcard can’t be scanned yet. Try “On a table” instead.';
+      return 'AR could not start on this phone. You can still see the flashcard.';
   }
 }

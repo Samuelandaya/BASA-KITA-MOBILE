@@ -20,6 +20,15 @@ export function VuforiaView({ word, mode, onState }: { word: string; mode: ArMod
   const send = (m: ToUnity) => ref.current?.postMessage(BRIDGE_OBJECT, m.method, JSON.stringify(m.payload));
 
   // Unity says "ready" once its scene loads; then it gets the key and the card to show.
+  // In case that first message is missed, start anyway after a short wait (Unity ignores repeats).
+  useEffect(() => {
+    const t = setTimeout(() => {
+      send(configure(vuforiaLicenseKey));
+      setStarted(true);
+    }, 2500);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     if (started) send(showCard(word, mode));
   }, [started, word, mode]);
