@@ -35,7 +35,8 @@ The 3D models are the same `.glb` files as the Kotlin app (`Assets/StreamingAsse
    Put it in `react-native/.env.local` (copy `.env.example`):
    `EXPO_PUBLIC_VUFORIA_LICENSE_KEY=...`. The app sends it to Unity when AR starts, so the key is not saved in the Unity project.
 2. **Open the Unity project.** In Unity Hub: *Add → Add project from disk →* `react-native/unity/BasaKitaAR`.
-   Unity fills in the missing project files and installs glTFast (for the .glb models) from `Packages/manifest.json`.
+   (`ProjectSettings/ProjectVersion.txt` is what tells Hub it is a Unity project and which editor to use: 6000.3.25f1.)
+   Unity fills in the other project files and installs glTFast (for the .glb models) from `Packages/manifest.json`.
 3. **Add Vuforia.** Download the *Vuforia Engine package for Unity* (.tgz) from the developer portal and add it with
    *Window → Package Manager → + → Add package from tarball*.
 4. **Vuforia settings.** *Window → Vuforia Configuration*: tick **Delayed Initialization** (the app starts Vuforia with the key).
