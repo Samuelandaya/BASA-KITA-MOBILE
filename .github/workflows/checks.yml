@@ -70,8 +70,11 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      # The native build fills the runner's disk, so remove big tools this job doesn't use.
+      - run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL && df -h /
       - run: npm ci
       # Builds without the Unity export (that needs Unity on a computer), so this checks everything else compiles.
       - run: npx expo prebuild --platform android --no-install
-      - run: ./gradlew --no-daemon assembleDebug
+      # One CPU type (most phones) keeps the build small and fast.
+      - run: ./gradlew --no-daemon assembleDebug -PreactNativeArchitectures=arm64-v8a
         working-directory: react-native/android
