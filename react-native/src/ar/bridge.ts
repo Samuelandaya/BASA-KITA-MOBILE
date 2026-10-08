@@ -90,16 +90,16 @@ export function pageArMessage(state: FromUnity | { type: 'starting' }, page: num
   switch (state.type) {
     case 'starting':
     case 'ready':
-      return 'Inihahanda ang camera…';
+      return 'Getting the camera ready…';
     case 'searching':
-      return `Itutok ang camera sa pahina ${page} ng aklat.`;
+      return `Point the camera at page ${page} of the book.`;
     case 'tracking':
-      return 'Ayan! Tingnan mo ang kuwento sa 3D.';
+      return 'There it is! See the story in 3D.';
     case 'lost':
-      return `Ipakita muli ang pahina ${page} sa camera.`;
+      return `Show page ${page} to the camera again.`;
     case 'error':
-      if (state.code === 'LICENSE') return 'Kailangan ng Vuforia license key ang AR. Ipaayos sa nakatatanda.';
-      if (state.code === 'NO_PAGE_TARGET') return 'Hindi pa ma-scan ang pahinang ito.';
-      return 'Hindi gumana ang AR sa teleponong ito.';
+      if (state.code === 'LICENSE') return 'AR needs a Vuforia license key. Ask a grown-up to add it.';
+      if (state.code === 'NO_PAGE_TARGET') return 'This page can’t be scanned yet.';
+      return 'AR could not start on this phone.';
   }
 }

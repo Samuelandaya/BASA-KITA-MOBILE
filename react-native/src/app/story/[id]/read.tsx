@@ -91,7 +91,7 @@ export default function Read() {
       ) : null}
       {pageData?.arTarget ? (
         <Btn
-          label="Tingnan sa AR"
+          label="See this page in AR"
           icon="cube"
           kind="white"
           onPress={() => { stopSpeaking(); router.push({ pathname: '/story/[id]/ar', params: { id: story.id, page: String(page) } }); }}

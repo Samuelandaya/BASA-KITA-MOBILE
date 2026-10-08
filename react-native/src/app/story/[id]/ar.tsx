@@ -24,11 +24,11 @@ export default function StoryPageAr() {
   const printed = page + 2;
 
   const missing = !unityAvailable
-    ? 'Wala pa ang AR sa build na ito. Kailangan ang Unity + Vuforia export (tingnan ang unity/README.md).'
+    ? 'AR isn’t in this build yet. It needs the Unity + Vuforia export (see unity/README.md).'
     : isPlaceholderKey(vuforiaLicenseKey)
-      ? 'Kailangan ng Vuforia license key. Ilagay ang EXPO_PUBLIC_VUFORIA_LICENSE_KEY sa .env.local at i-build muli.'
+      ? 'AR needs a Vuforia license key. Add EXPO_PUBLIC_VUFORIA_LICENSE_KEY to .env.local and build again.'
       : null;
-  const message = !data?.arTarget ? 'Walang AR ang pahinang ito.' : missing ?? pageArMessage(state, printed);
+  const message = !data?.arTarget ? 'This page has no AR.' : missing ?? pageArMessage(state, printed);
   const go = (to: number) => { setState({ type: 'starting' }); setPage(to); };
 
   return (
@@ -38,22 +38,22 @@ export default function StoryPageAr() {
       ) : null}
       <SafeAreaView style={st.overlay} pointerEvents="box-none">
         <View style={st.top}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Bumalik" onPress={() => router.back()} style={st.round}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} style={st.round}>
             <Ionicons name="arrow-back" size={22} color={C.ink} />
           </Pressable>
           <View style={st.title}>
-            <Text style={T.body(15, C.navy, 'ExtraBold')} numberOfLines={1}>{story?.title ?? 'Kuwento'} · pahina {printed}</Text>
+            <Text style={T.body(15, C.navy, 'ExtraBold')} numberOfLines={1}>{story?.title ?? 'Story'} · page {printed}</Text>
           </View>
         </View>
         <View style={{ flex: 1 }} />
         <Text accessibilityLiveRegion="polite" style={[T.body(16, C.navy, 'ExtraBold'), st.message]}>{message}</Text>
         {story ? (
           <View style={st.nav}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Nakaraang pahina" disabled={page === 1} onPress={() => go(page - 1)} style={[st.round, page === 1 && st.off]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Previous page" disabled={page === 1} onPress={() => go(page - 1)} style={[st.round, page === 1 && st.off]}>
               <Ionicons name="chevron-back" size={24} color={C.ink} />
             </Pressable>
             <Text style={[T.body(14, C.white, 'ExtraBold'), st.count]}>{page} / {story.pages.length}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Susunod na pahina" disabled={page === story.pages.length} onPress={() => go(page + 1)} style={[st.round, page === story.pages.length && st.off]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Next page" disabled={page === story.pages.length} onPress={() => go(page + 1)} style={[st.round, page === story.pages.length && st.off]}>
               <Ionicons name="chevron-forward" size={24} color={C.ink} />
             </Pressable>
           </View>
