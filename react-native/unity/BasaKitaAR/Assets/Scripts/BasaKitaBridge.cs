@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GLTFast;
 using UnityEngine;
@@ -10,6 +11,7 @@ using Vuforia;
 /// The message format is in react-native/src/ar/bridge.ts; keep the two files in step.
 ///
 /// App -> Unity:  Configure {"licenseKey":"..."}   ShowCard {"word":"bola","mode":"ground"|"card"}   Stop {}
+///                ShowPage {"target":"butit-kulit-page-3","models":["aso"],"widthMeters":0.21}
 /// Unity -> App:  ready, searching, tracking, lost, error   (see Say* methods below)
 /// </summary>
 public class BasaKitaBridge : MonoBehaviour
@@ -33,6 +35,7 @@ public class BasaKitaBridge : MonoBehaviour
 
     [Serializable] private class ConfigureMessage { public string licenseKey; }
     [Serializable] private class ShowCardMessage { public string word; public string mode; }
+    [Serializable] private class ShowPageMessage { public string target; public string[] models; public float widthMeters; }
     [Serializable] private class OutMessage { public string type; public string word; public string mode; public string code; public string message; }
 
     private string word;
@@ -41,6 +44,11 @@ public class BasaKitaBridge : MonoBehaviour
     private ObserverBehaviour watched;
     private bool started;
     private bool placed;
+    private bool vuforiaRunning;
+    private ShowPageMessage pendingPage;
+    private int pageRequest; // newest ShowPage wins when several load at once
+    // Story pages made into Image Targets at runtime, by target name (StreamingAssets/pages/<name>.jpg).
+    private readonly Dictionary<string, ImageTargetBehaviour> pageTargets = new Dictionary<string, ImageTargetBehaviour>();
 
     private void Start()
     {
@@ -71,6 +79,7 @@ public class BasaKitaBridge : MonoBehaviour
         started = true;
         VuforiaConfiguration.Instance.Vuforia.LicenseKey = m.licenseKey.Trim();
         VuforiaApplication.Instance.OnVuforiaInitialized += OnVuforiaInitialized;
+        VuforiaApplication.Instance.OnVuforiaStarted += OnVuforiaStarted;
         VuforiaApplication.Instance.Initialize();
     }
 
@@ -94,8 +103,24 @@ public class BasaKitaBridge : MonoBehaviour
         Place();
     }
 
+    /// <summary>
+    /// Puts a story page's 3D models on that printed page. The page picture becomes a Vuforia
+    /// Image Target at runtime, so no target database is needed and it works without ARCore.
+    /// </summary>
+    public async void ShowPage(string json)
+    {
+        var m = JsonUtility.FromJson<ShowPageMessage>(json);
+        if (m == null || string.IsNullOrEmpty(m.target)) return;
+        pendingPage = m;
+        mode = "page";
+        word = m.target;
+        if (vuforiaRunning) await PlacePage(m);
+    }
+
     public void Stop(string _)
     {
+        pendingPage = null;
+        pageRequest++;
         Unwatch();
         if (model != null) Destroy(model);
         model = null;
@@ -105,11 +130,64 @@ public class BasaKitaBridge : MonoBehaviour
 
     // ---- Vuforia ----
 
+    private async void OnVuforiaStarted()
+    {
+        vuforiaRunning = true;
+        if (pendingPage != null) await PlacePage(pendingPage);
+    }
+
+    private async Task PlacePage(ShowPageMessage m)
+    {
+        int request = ++pageRequest;
+        Unwatch();
+        if (model != null) Destroy(model);
+        model = null;
+        if (planeFinder != null) planeFinder.gameObject.SetActive(false);
+
+        float width = m.widthMeters > 0f ? m.widthMeters : 0.21f;
+        ImageTargetBehaviour target;
+        try
+        {
+            if (!pageTargets.TryGetValue(m.target, out target) || target == null)
+            {
+                target = await VuforiaBehaviour.Instance.ObserverFactory.CreateImageTargetAsync("pages/" + m.target + ".jpg", width, m.target);
+                pageTargets[m.target] = target;
+            }
+        }
+        catch (Exception e)
+        {
+            SayError("NO_PAGE_TARGET", "Could not make an Image Target from pages/" + m.target + ".jpg: " + e.Message);
+            return;
+        }
+        if (request != pageRequest) return;
+        foreach (var t in pageTargets.Values) if (t != null) t.enabled = t == target;
+
+        // The page's models stand in a row across the page, each about a third of the page wide.
+        var scene = new GameObject(m.target + " scene");
+        var names = m.models ?? new string[0];
+        float size = width * 0.33f;
+        for (int i = 0; i < names.Length; i++)
+        {
+            var piece = await LoadModel(names[i], size);
+            if (request != pageRequest) { Destroy(scene); if (piece != null) Destroy(piece); return; }
+            if (piece == null) continue;
+            piece.transform.SetParent(scene.transform, false);
+            piece.transform.localPosition = new Vector3((i - (names.Length - 1) / 2f) * size * 1.1f, 0f, 0f);
+            piece.SetActive(true);
+        }
+        model = scene;
+        Attach(target.transform);
+        model.SetActive(false);
+        Watch(target);
+        Say(new OutMessage { type = "searching", mode = "page" });
+    }
+
     private void OnVuforiaInitialized(VuforiaInitError error)
     {
         if (error == VuforiaInitError.NONE)
         {
-            if (model != null) Place();
+            // Story pages are placed once Vuforia has started (OnVuforiaStarted).
+            if (model != null && mode != "page") Place();
             return;
         }
         started = false;
@@ -182,7 +260,9 @@ public class BasaKitaBridge : MonoBehaviour
 
     // ---- 3D pictures: the same .glb files as the Kotlin app, in StreamingAssets/models ----
 
-    private async Task<GameObject> LoadModel(string w)
+    private Task<GameObject> LoadModel(string w) => LoadModel(w, modelSize);
+
+    private async Task<GameObject> LoadModel(string w, float size)
     {
         var url = Application.streamingAssetsPath + "/models/" + w + ".glb";
         if (!url.Contains("://")) url = "file://" + url; // Android's path is already a jar:file:// URL
@@ -196,7 +276,7 @@ public class BasaKitaBridge : MonoBehaviour
             Destroy(go);
             return null;
         }
-        FitToSize(go, holder);
+        FitToSize(go, holder, size);
         go.SetActive(false);
         return go;
     }
@@ -208,8 +288,8 @@ public class BasaKitaBridge : MonoBehaviour
         model.transform.localRotation = Quaternion.identity;
     }
 
-    // Scales the model so its biggest side is modelSize and it stands on the surface.
-    private void FitToSize(GameObject go, Transform holder)
+    // Scales the model so its biggest side is `size` (meters) and it stands on the surface.
+    private void FitToSize(GameObject go, Transform holder, float size)
     {
         var renderers = go.GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0) return;
@@ -217,7 +297,7 @@ public class BasaKitaBridge : MonoBehaviour
         foreach (var r in renderers) bounds.Encapsulate(r.bounds);
         float biggest = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
         if (biggest <= 0f) return;
-        float scale = modelSize / biggest;
+        float scale = size / biggest;
         holder.localScale = Vector3.one * scale;
         holder.localPosition = new Vector3(-bounds.center.x, -bounds.min.y, -bounds.center.z) * scale;
     }

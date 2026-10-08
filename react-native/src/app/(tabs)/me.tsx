@@ -1,5 +1,6 @@
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { LESSONS } from '../../content';
+import { STORIES } from '../../content';
 import { LEVELS, learnerLevel } from '../../shared/learner.js';
 import { useApp } from '../../state/AppState';
 import type { Settings } from '../../state/model';
@@ -29,7 +30,7 @@ export default function Me() {
       </Card>
       <Card>
         <Text style={T.head(20)}>My skills</Text>
-        <Skill label="Stories finished" value={String(sk.finished)} />
+        <Skill label="Stories finished" value={String(STORIES.filter((s) => app.account.progress[s.id]?.finished).length)} />
         <Skill label="Letter sounds" value={`${app.account.lessonsDone} of ${LESSONS.length}`} />
         <Skill label="Reading aloud" value={pctText(sk.reading)} />
         <Skill label="Understanding" value={pctText(sk.understanding)} />

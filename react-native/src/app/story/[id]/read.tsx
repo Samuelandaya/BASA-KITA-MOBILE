@@ -22,7 +22,8 @@ export default function Read() {
   const [current, setCurrent] = useState(-1);
   const [picked, setPicked] = useState<string | null>(null);
 
-  const text = story?.pages[page - 1]?.text ?? '';
+  const pageData = story?.pages[page - 1];
+  const text = pageData?.text ?? '';
   const words = useMemo(() => splitWords(text), [text]);
   const { speed, volume, highlight, narration, textSize } = app.settings;
 
@@ -58,9 +59,15 @@ export default function Read() {
 
   return (
     <Page title={story.title}>
-      <View style={[st.cover, { backgroundColor: story.color }]}>
-        <Cover name={story.cover} width={340} height={180} />
-      </View>
+      {pageData?.image ? (
+        <View style={st.drawing}>
+          <Cover name={pageData.image} width={340} height={240} fit="contain" />
+        </View>
+      ) : (
+        <View style={[st.cover, { backgroundColor: story.color }]}>
+          <Cover name={story.cover} width={340} height={180} />
+        </View>
+      )}
       <Text style={T.body(13, C.muted, 'ExtraBold')}>Page {page} of {story.pages.length}</Text>
       <Bar pct={(page / story.pages.length) * 100} color={C.orange} />
       <Card>
@@ -69,7 +76,7 @@ export default function Read() {
             <Text
               key={i}
               onPress={() => { setPicked(w.word); speak(cleanWord(w.word), { lang: story.lang, rate: speed, volume: volume / 100 }); }}
-              style={[T.body(SIZES[textSize] ?? 26, C.ink, 'Bold'), i === current && st.now, cleanWord(w.word) === cleanWord(story.pages[page - 1].word) && st.focus]}
+              style={[T.body(SIZES[textSize] ?? 26, C.ink, 'Bold'), i === current && st.now, cleanWord(w.word) === cleanWord(pageData?.word ?? '') && st.focus]}
             >
               {w.word}{' '}
             </Text>
@@ -81,6 +88,14 @@ export default function Read() {
           <Text style={T.head(22, C.greenText, 'Bold')}>{cleanWord(picked)}</Text>
           <Text style={T.body(15)}>{vocab ? `${vocab.meaning} (${vocab.pair})` : 'Tap the speaker to hear it again.'}</Text>
         </Card>
+      ) : null}
+      {pageData?.arTarget ? (
+        <Btn
+          label="Tingnan sa AR"
+          icon="cube"
+          kind="white"
+          onPress={() => { stopSpeaking(); router.push({ pathname: '/story/[id]/ar', params: { id: story.id, page: String(page) } }); }}
+        />
       ) : null}
       <Btn label={reading ? 'Stop' : 'Read this page to me'} icon={reading ? 'stop' : 'volume-high'} kind="blue" onPress={() => (reading ? stopSpeaking() : readPage())} />
       <View style={st.nav}>
@@ -98,6 +113,7 @@ export default function Read() {
 
 const st = StyleSheet.create({
   cover: { borderRadius: 20, overflow: 'hidden', height: 180, alignItems: 'center', justifyContent: 'center' },
+  drawing: { borderRadius: 20, overflow: 'hidden', height: 240, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
   words: { lineHeight: 42 },
   now: { backgroundColor: C.yellow, borderRadius: 6 },
   focus: { color: C.orangeDark, textDecorationLine: 'underline' },

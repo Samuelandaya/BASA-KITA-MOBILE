@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { arMessage, isPlaceholderKey, type ArMode, type FromUnity } from '../../ar/bridge';
+import { arMessage, isPlaceholderKey, showCard, type ArMode, type FromUnity } from '../../ar/bridge';
 import { unityAvailable, vuforiaLicenseKey } from '../../ar/config';
 import { VuforiaView } from '../../ar/VuforiaView';
 import { cardByWord } from '../../content';
@@ -30,7 +30,7 @@ export default function ArScreen() {
 
   return (
     <View style={st.screen}>
-      {card && !missing ? <VuforiaView word={card.fil} mode={mode} onState={setState} /> : null}
+      {card && !missing ? <VuforiaView show={showCard(card.fil, mode)} onState={setState} /> : null}
       <SafeAreaView style={st.overlay} pointerEvents="box-none">
         <View style={st.top}>
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} style={st.back}>

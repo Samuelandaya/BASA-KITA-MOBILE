@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { BRIDGE_OBJECT, configure, parseFromUnity, showCard, stop, type ArMode, type FromUnity, type ToUnity } from './bridge';
+import { BRIDGE_OBJECT, configure, parseFromUnity, stop, type FromUnity, type ToUnity } from './bridge';
 import { unityAvailable, vuforiaLicenseKey } from './config';
 
 type UnityRef = { postMessage: (gameObject: string, method: string, message: string) => void };
@@ -10,10 +10,11 @@ type UnityProps = { ref?: unknown; style?: object; onUnityMessage?: (e: { native
 const UnityView: ComponentType<UnityProps> | null = unityAvailable ? require('@azesmway/react-native-unity').default : null;
 
 /**
- * The camera view with Vuforia AR, drawn by Unity. It sends the license key and the flashcard word
- * to Unity and reports what Unity sees through `onState`.
+ * The camera view with Vuforia AR, drawn by Unity. It sends the license key and what to show
+ * (`show`: a flashcard, see showCard, or a story page, see showPage) to Unity and reports what
+ * Unity sees through `onState`.
  */
-export function VuforiaView({ word, mode, onState }: { word: string; mode: ArMode; onState: (s: FromUnity) => void }) {
+export function VuforiaView({ show, onState }: { show: ToUnity; onState: (s: FromUnity) => void }) {
   const ref = useRef<UnityRef>(null);
   const [started, setStarted] = useState(false);
 
@@ -29,9 +30,10 @@ export function VuforiaView({ word, mode, onState }: { word: string; mode: ArMod
     return () => clearTimeout(t);
   }, []);
 
+  const showKey = JSON.stringify(show);
   useEffect(() => {
-    if (started) send(showCard(word, mode));
-  }, [started, word, mode]);
+    if (started) send(show);
+  }, [started, showKey]);
 
   useEffect(() => () => send(stop()), []);
 

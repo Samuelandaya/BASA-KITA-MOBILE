@@ -48,6 +48,7 @@ function Routes() {
         <Stack.Screen name="story/[id]/index" />
         <Stack.Screen name="story/[id]/read" />
         <Stack.Screen name="story/[id]/complete" />
+        <Stack.Screen name="story/[id]/ar" options={{ animation: 'fade' }} />
         <Stack.Screen name="ar/[word]" options={{ animation: 'fade' }} />
       </Stack.Protected>
     </Stack>

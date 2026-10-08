@@ -2,12 +2,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { STORIES, starterStories, storyById } from '../../content';
-import { learnerLevel, recommendStories } from '../../shared/learner.js';
 import { useApp } from '../../state/AppState';
 import { continueId, isNewReader, percentRead, type Settings } from '../../state/model';
 import { PICTURES } from '../../ui/Cover';
-import { Bar, Btn, Card, Page, SectionTitle, Seg, StoryCard, Tag, type IconName } from '../../ui/kit';
-import { C, T, levelBg, levelFg } from '../../ui/theme';
+import { Bar, Btn, Card, Page, SectionTitle, Seg, StoryCard, type IconName } from '../../ui/kit';
+import { C, T } from '../../ui/theme';
 
 const LANGUAGES: Settings['language'][] = ['Filipino', 'English', 'Bilingual'];
 const greeting = (h = new Date().getHours()) => (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening');
@@ -76,18 +75,16 @@ function NewReaderHome() {
           <Ionicons name={x.done ? 'checkmark-circle' : 'ellipse-outline'} size={28} color={x.done ? C.green : '#B7C4D1'} />
         </Card>
       ))}
-      <SectionTitle title="Easy stories to start with" action="See all" onAction={() => router.navigate('/books')} />
-      <FlatList horizontal data={list.slice(0, 4)} keyExtractor={(x) => x.id} contentContainerStyle={{ gap: 12 }} showsHorizontalScrollIndicator={false} renderItem={({ item }) => <StoryCard story={item} />} />
+      <SectionTitle title="Your storybook" />
+      <FlatList horizontal data={list} keyExtractor={(x) => x.id} contentContainerStyle={{ gap: 12 }} showsHorizontalScrollIndicator={false} renderItem={({ item }) => <StoryCard story={item} />} />
     </>
   );
 }
 
 function ReturningHome() {
   const app = useApp();
-  const level = learnerLevel(app.account);
   const currentId = continueId(app.account.progress);
   const current = currentId ? storyById(currentId) : undefined;
-  const recs = recommendStories({ ...app.account, language: app.settings.language }, level, 5).filter((r: { story: { id: string } }) => r.story.id !== currentId).slice(0, 4);
   return (
     <>
       {current ? (
@@ -100,19 +97,12 @@ function ReturningHome() {
         </Card>
       ) : (
         <Card>
-          <Text style={T.head(20)}>Pick a new story to start!</Text>
-          <Btn label="Explore Storybooks" onPress={() => router.navigate('/books')} />
+          <Text style={T.head(20)}>Read Butit Kulit again!</Text>
+          <Btn label="Open the storybook" onPress={() => router.navigate('/books')} />
         </Card>
       )}
-      <View style={st.row}>
-        <Text style={[T.head(20), { flex: 1 }]}>Recommended for you</Text>
-        <Tag text={`${level.name} Reader`} bg={levelBg(level.name)} fg={levelFg(level.name)} />
-      </View>
-      {recs.length === 0 ? (
-        <Text style={T.body(14, C.muted)}>You’ve finished every story!</Text>
-      ) : (
-        <FlatList horizontal data={recs} keyExtractor={(x) => x.story.id} contentContainerStyle={{ gap: 12 }} showsHorizontalScrollIndicator={false} renderItem={({ item }) => <StoryCard story={item.story} note={item.reason} />} />
-      )}
+      <SectionTitle title="Your storybook" />
+      <FlatList horizontal data={STORIES} keyExtractor={(x) => x.id} contentContainerStyle={{ gap: 12 }} showsHorizontalScrollIndicator={false} renderItem={({ item }) => <StoryCard story={item} />} />
     </>
   );
 }

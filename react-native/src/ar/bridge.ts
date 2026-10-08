@@ -2,6 +2,8 @@
 // The Unity side is unity/BasaKitaAR/Assets/Scripts/BasaKitaBridge.cs; keep the two in step.
 //
 // App -> Unity: UnityView.postMessage(BRIDGE_OBJECT, method, json)
+//   ShowPage puts 3D models on a printed story page: the page picture is made into a Vuforia Image Target
+//   at runtime (StreamingAssets/pages/<target>.jpg), so no target database is needed.
 // Unity -> App: a JSON string, e.g. {"type":"tracking","word":"bola"}
 
 /** Name of the GameObject in the Unity scene that holds BasaKitaBridge.cs. */
@@ -17,6 +19,7 @@ export type ArMode = 'ground' | 'card';
 export type ToUnity =
   | { method: 'Configure'; payload: { licenseKey: string } }
   | { method: 'ShowCard'; payload: { word: string; mode: ArMode } }
+  | { method: 'ShowPage'; payload: { target: string; models: string[]; widthMeters: number } }
   | { method: 'Stop'; payload: Record<string, never> };
 
 export type FromUnity =
@@ -29,6 +32,8 @@ export type FromUnity =
 export const configure = (licenseKey: string): ToUnity => ({ method: 'Configure', payload: { licenseKey } });
 export const showCard = (word: string, mode: ArMode): ToUnity => ({ method: 'ShowCard', payload: { word, mode } });
 export const stop = (): ToUnity => ({ method: 'Stop', payload: {} });
+/** A printed A4 page is about 21 cm wide; Vuforia uses this to size the 3D models. */
+export const showPage = (target: string, models: string[], widthMeters = 0.21): ToUnity => ({ method: 'ShowPage', payload: { target, models, widthMeters } });
 
 /** Turns Unity's message text into a typed message, or null if it isn't one we know. */
 export function parseFromUnity(text: string): FromUnity | null {
@@ -77,5 +82,24 @@ export function arMessage(state: FromUnity | { type: 'starting' }, eng: string, 
       if (state.code === 'LICENSE') return 'AR needs a Vuforia license key. Ask a grown-up to add it in the app settings file.';
       if (state.code === 'NO_CARD_TARGET') return 'This flashcard can’t be scanned yet. Try “On a table” instead.';
       return 'AR could not start on this phone. You can still see the flashcard.';
+  }
+}
+
+/** What to tell the child while AR looks for a story page. */
+export function pageArMessage(state: FromUnity | { type: 'starting' }, page: number): string {
+  switch (state.type) {
+    case 'starting':
+    case 'ready':
+      return 'Inihahanda ang camera…';
+    case 'searching':
+      return `Itutok ang camera sa pahina ${page} ng aklat.`;
+    case 'tracking':
+      return 'Ayan! Tingnan mo ang kuwento sa 3D.';
+    case 'lost':
+      return `Ipakita muli ang pahina ${page} sa camera.`;
+    case 'error':
+      if (state.code === 'LICENSE') return 'Kailangan ng Vuforia license key ang AR. Ipaayos sa nakatatanda.';
+      if (state.code === 'NO_PAGE_TARGET') return 'Hindi pa ma-scan ang pahinang ito.';
+      return 'Hindi gumana ang AR sa teleponong ito.';
   }
 }

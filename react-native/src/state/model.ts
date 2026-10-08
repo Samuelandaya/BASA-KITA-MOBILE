@@ -40,7 +40,8 @@ export type Settings = {
 };
 export type SavedState = { user: User | null; avatarColor: string; settings: Settings; accounts: Record<string, Account> };
 
-export const STORAGE_KEY = 'basa-kita:state:v2';
+// v3: the app now has only Butit Kulit, so saved progress on the old sample stories is dropped.
+export const STORAGE_KEY = 'basa-kita:state:v3';
 
 export const EMPTY_ACCOUNT: Account = { progress: {}, lessonsDone: 0, drafts: [], saved: [], scores: {}, quizzes: {}, sample: false };
 
@@ -51,19 +52,13 @@ export function sampleAccount(now = Date.now()): Account {
   const daysAgo = (n: number) => now - n * DAY;
   return {
     progress: {
-      'mia-and-the-red-ball': { page: 3, finished: false, lastRead: daysAgo(0.1) },
-      'the-magic-kite': { page: 1, finished: false, lastRead: daysAgo(1) },
-      'the-lost-puppy': { page: 5, finished: true, stars: 3, lastRead: daysAgo(2) },
-      'ang-munting-puno': { page: 5, finished: true, stars: 3, lastRead: daysAgo(4) },
-      'my-first-school-day': { page: 5, finished: true, stars: 2, lastRead: daysAgo(6) },
+      'butit-kulit': { page: 8, finished: true, stars: 3, lastRead: daysAgo(0.1) },
     },
-    saved: ['the-magic-kite', 'ang-munting-puno'],
+    saved: ['butit-kulit'],
     scores: {
-      'the-lost-puppy:1': { score: 78, english: true }, 'the-lost-puppy:2': { score: 64, english: true },
-      'ang-munting-puno:1': { score: 100, english: false }, 'ang-munting-puno:3': { score: 86, english: false },
-      'mia-and-the-red-ball:1': { score: 72, english: true },
+      'butit-kulit:1': { score: 80, english: false }, 'butit-kulit:2': { score: 74, english: false },
     },
-    quizzes: { 'the-lost-puppy': { correct: 3, total: 3 }, 'ang-munting-puno': { correct: 2, total: 3 }, 'my-first-school-day': { correct: 2, total: 3 } },
+    quizzes: { 'butit-kulit': { correct: 3, total: 3 } },
     lessonsDone: 5,
     drafts: [{ id: 'draft-1', title: 'Ang Pusa ni Sam', language: 'Filipino', character: 'Cat', place: 'Home', pages: 3, texts: ['Si Sam ay may pusa.', 'Ang pusa ay puti at malambot.', 'Mahal ni Sam ang kanyang pusa.'] }],
     sample: true,
