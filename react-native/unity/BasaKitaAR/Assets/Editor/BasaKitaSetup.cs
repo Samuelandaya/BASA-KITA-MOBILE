@@ -96,8 +96,32 @@ public static class BasaKitaSetup
             throw new System.Exception("Vuforia menu item not found: " + menuItem);
     }
 
+    // glTFast picks its shaders by name when a model loads at runtime, so nothing in the scene
+    // references them and the build strips them: models then draw magenta. Always include them.
+    static readonly string[] GltfShaders = { "glTF/PbrMetallicRoughness", "glTF/PbrSpecularGlossiness", "glTF/Unlit" };
+
+    static void IncludeGltfShaders()
+    {
+        var so = new SerializedObject(UnityEngine.Rendering.GraphicsSettings.GetGraphicsSettings());
+        var list = so.FindProperty("m_AlwaysIncludedShaders");
+        foreach (var name in GltfShaders)
+        {
+            var shader = Shader.Find(name);
+            if (shader == null) { Debug.LogWarning("[BASA-KITA] Shader not found: " + name); continue; }
+            bool present = false;
+            for (int i = 0; i < list.arraySize; i++) present |= list.GetArrayElementAtIndex(i).objectReferenceValue == shader;
+            if (present) continue;
+            list.InsertArrayElementAtIndex(list.arraySize);
+            list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = shader;
+        }
+        so.ApplyModifiedProperties();
+        AssetDatabase.SaveAssets();
+        Debug.Log("[BASA-KITA] Always included shaders: " + list.arraySize);
+    }
+
     static void SetAndroidSettings()
     {
+        IncludeGltfShaders();
         var android = NamedBuildTarget.Android;
         PlayerSettings.SetApplicationIdentifier(android, "ph.basakita.rn");
         PlayerSettings.SetScriptingBackend(android, ScriptingImplementation.IL2CPP);
