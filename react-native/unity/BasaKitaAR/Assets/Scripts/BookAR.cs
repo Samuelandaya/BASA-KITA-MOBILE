@@ -23,7 +23,7 @@ public class BookAR : MonoBehaviour
     public State Current { get; private set; } = State.Loading;
 
     // Where the book sits in front of the camera while placing, and how far away.
-    static readonly Vector3 PreviewOffset = new Vector3(0f, -0.14f, 0.42f);
+    static readonly Vector3 PreviewOffset = new Vector3(0f, -0.07f, 0.5f); // a little below eye level, so the book sits above the reading panel
 
     Transform book, coverPivot, sceneAnchor;
     readonly Dictionary<int, GameObject> pages = new Dictionary<int, GameObject>();
