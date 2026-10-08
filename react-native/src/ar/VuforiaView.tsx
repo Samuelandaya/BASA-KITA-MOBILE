@@ -4,7 +4,7 @@ import { BRIDGE_OBJECT, configure, parseFromUnity, showCard, stop, type ArMode, 
 import { unityAvailable, vuforiaLicenseKey } from './config';
 
 type UnityRef = { postMessage: (gameObject: string, method: string, message: string) => void };
-type UnityProps = { ref?: unknown; style?: object; androidKeepPlayerMounted?: boolean; onUnityMessage?: (e: { nativeEvent: { message: string } }) => void };
+type UnityProps = { ref?: unknown; style?: object; onUnityMessage?: (e: { nativeEvent: { message: string } }) => void };
 
 // Loaded only when the app was built with the Unity export, so builds without it never touch the native view.
 const UnityView: ComponentType<UnityProps> | null = unityAvailable ? require('@azesmway/react-native-unity').default : null;
@@ -41,7 +41,9 @@ export function VuforiaView({ word, mode, onState }: { word: string; mode: ArMod
       <UnityView
         ref={ref}
         style={{ flex: 1 }}
-        androidKeepPlayerMounted
+        // Not androidKeepPlayerMounted: with it, leaving the AR screen leaves Unity attached to the
+        // destroyed view and opening AR again crashes ("Graphics device is null"). Without it the
+        // library parks Unity in the background and reattaches it next time.
         onUnityMessage={(e) => {
           const m = parseFromUnity(e.nativeEvent.message);
           if (!m) return;
