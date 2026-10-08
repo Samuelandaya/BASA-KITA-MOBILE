@@ -28,17 +28,46 @@ export const BUTIT_KULIT: Story = {
       image: 'butit/page-3.jpg',
       arTarget: 'butit-kulit-page-3',
       arModels: ['aso'],
+      // The 3D scene that stands on the drawing (the top half of the printed page). Positions are in
+      // page widths from the page's centre; Butit walks in and acts out the page as it is read.
+      arScene: {
+        props: [
+          { m: 'ground_grass', x: 0, z: 0.2, s: 0.78 },
+          { m: 'tree_oak', x: -0.28, z: 0.38, s: 0.34 },
+          { m: 'tree_default', x: 0.3, z: 0.42, s: 0.26 },
+          { m: 'plant_bush', x: 0.31, z: 0.12, s: 0.1 },
+          { m: 'grass_large', x: -0.18, z: 0.05, s: 0.07 },
+          { m: 'grass', x: 0.12, z: 0.32, s: 0.06 },
+          { m: 'grass', x: -0.05, z: 0.4, s: 0.05 },
+          { m: 'flower_yellowA', x: -0.3, z: 0.12, s: 0.05 },
+          { m: 'flower_redA', x: 0.2, z: 0.02, s: 0.05 },
+          { m: 'rock_smallA', x: 0.06, z: 0.44, s: 0.05 },
+        ],
+        actors: [{ id: 'butit', m: 'butit', x: 0.36, z: 0.16, s: 0.2, r: -90 }],
+      },
+      // What Butit does as the narration reaches each word (the word's position in the page text).
+      arCues: [
+        { at: 0, actor: 'butit', action: 'walkTo', x: 0, z: 0.18 }, // "Ako ay may alaga…": Butit trots in
+        { word: 'Mabalahibo', actor: 'butit', action: 'wiggle' }, // fluffy shake
+        { word: 'Puti', actor: 'butit', action: 'spin' }, // turns around to show his white and black coat
+        { word: 'Makulit', actor: 'butit', action: 'runAround' }, // playful, runs a circle
+        { word: 'malambing', actor: 'butit', action: 'walkTo', x: -0.02, z: 0.08 }, // comes close to the reader
+        { word: 'Butit.', actor: 'butit', action: 'jump' }, // hears his name
+        { word: 'busog', actor: 'butit', action: 'eat' },
+        { word: 'tiyan.', actor: 'butit', action: 'wiggle' }, // the big round belly
+      ],
     },
     {
-      text: 'Tuwing umaga, pinaiinom ko siya ng gatas. Masiglang-masigla siya sa tuwing nakaiinom ng gatas. Dinidilaan niya ako sa pisngi.',
+      text: 'Tuwing umaga, pinaiinom ko siya ng gatas. Masiglang-masigla siya sa tuwing nakaiinom ng gatas. Dinidilaan niya ako sa pisngi. Madalas kaming maglaro ng habulan at tagu-taguan sa aming bakuran.',
       word: 'gatas',
       image: 'butit/page-4.jpg',
       arTarget: 'butit-kulit-page-4',
       arModels: ['bata', 'aso'],
     },
     {
-      text: 'Madalas kaming maglaro ng habulan at tagu-taguan sa aming bakuran.',
-      word: 'maglaro',
+      // Printed page 5 is a drawing with no new text, so there is nothing to read aloud here.
+      text: '',
+      word: '',
       image: 'butit/page-5.jpg',
       arTarget: 'butit-kulit-page-5',
       arModels: ['bata', 'aso'],

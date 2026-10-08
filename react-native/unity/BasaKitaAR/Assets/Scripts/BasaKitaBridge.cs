@@ -11,7 +11,8 @@ using Vuforia;
 /// The message format is in react-native/src/ar/bridge.ts; keep the two files in step.
 ///
 /// App -> Unity:  Configure {"licenseKey":"..."}   ShowCard {"word":"bola","mode":"ground"|"card"}   Stop {}
-///                ShowPage {"target":"butit-kulit-page-3","models":["aso"],"widthMeters":0.21}
+///                ShowPage {"target":"butit-kulit-page-3","models":["aso"],"widthMeters":0.21,"scene":{...}}
+///                Cue {"actor":"butit","action":"walkTo","x":0,"z":0.2}   ResetScene {}
 /// Unity -> App:  ready, searching, tracking, lost, error   (see Say* methods below)
 /// </summary>
 public class BasaKitaBridge : MonoBehaviour
@@ -35,7 +36,8 @@ public class BasaKitaBridge : MonoBehaviour
 
     [Serializable] private class ConfigureMessage { public string licenseKey; }
     [Serializable] private class ShowCardMessage { public string word; public string mode; }
-    [Serializable] private class ShowPageMessage { public string target; public string[] models; public float widthMeters; }
+    [Serializable] private class ShowPageMessage { public string target; public string[] models; public float widthMeters; public StoryScene.Spec scene; }
+    [Serializable] private class CueMessage { public string actor; public string action; public float x; public float z; }
     [Serializable] private class OutMessage { public string type; public string word; public string mode; public string code; public string message; }
 
     private string word;
@@ -47,6 +49,7 @@ public class BasaKitaBridge : MonoBehaviour
     private bool vuforiaRunning;
     private ShowPageMessage pendingPage;
     private int pageRequest; // newest ShowPage wins when several load at once
+    private StoryScene storyScene; // the page's 3D scene, when the page has one
     // Story pages made into Image Targets at runtime, by target name (StreamingAssets/pages/<name>.jpg).
     private readonly Dictionary<string, ImageTargetBehaviour> pageTargets = new Dictionary<string, ImageTargetBehaviour>();
 
@@ -117,10 +120,23 @@ public class BasaKitaBridge : MonoBehaviour
         if (vuforiaRunning) await PlacePage(m);
     }
 
+    /// <summary>A character in the page's scene acts, as the narration reaches a word.</summary>
+    public void Cue(string json)
+    {
+        var m = JsonUtility.FromJson<CueMessage>(json);
+        if (m != null && storyScene != null) storyScene.Cue(m.actor, m.action, m.x, m.z);
+    }
+
+    public void ResetScene(string _)
+    {
+        if (storyScene != null) storyScene.ResetScene();
+    }
+
     public void Stop(string _)
     {
         pendingPage = null;
         pageRequest++;
+        storyScene = null;
         Unwatch();
         if (model != null) Destroy(model);
         model = null;
@@ -161,6 +177,20 @@ public class BasaKitaBridge : MonoBehaviour
         }
         if (request != pageRequest) return;
         foreach (var t in pageTargets.Values) if (t != null) t.enabled = t == target;
+
+        bool hasScene = m.scene != null && ((m.scene.props?.Length ?? 0) + (m.scene.actors?.Length ?? 0)) > 0;
+        if (hasScene)
+        {
+            var built = await StoryScene.Build(target.transform, m.scene, width, LoadModel);
+            if (request != pageRequest) { Destroy(built.gameObject); return; }
+            storyScene = built;
+            model = built.gameObject;
+            model.SetActive(false);
+            Watch(target);
+            Say(new OutMessage { type = "searching", mode = "page" });
+            return;
+        }
+        storyScene = null;
 
         // The page's models stand in a row across the page, each about a third of the page wide.
         var scene = new GameObject(m.target + " scene");
@@ -255,6 +285,7 @@ public class BasaKitaBridge : MonoBehaviour
     {
         bool visible = status.Status == Status.TRACKED || status.Status == Status.EXTENDED_TRACKED;
         if (model != null) model.SetActive(visible);
+        if (visible && storyScene != null) storyScene.OnShown();
         Say(new OutMessage { type = visible ? "tracking" : "lost", word = word });
     }
 

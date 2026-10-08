@@ -13,7 +13,14 @@ export type StoryPage = {
   image?: string; // the page's drawing, see src/ui/Cover.tsx
   arTarget?: string; // Vuforia Image Target made from the printed page (unity StreamingAssets/pages/<arTarget>.jpg)
   arModels?: string[]; // 3D models (unity StreamingAssets/models/<name>.glb) shown on that page in AR
+  arScene?: ArScene; // a full 3D scene for the page, used instead of arModels
+  arCues?: ArCue[]; // what the scene's characters do as the narration reaches each word
 };
+/** A model placed on the page: positions in page widths from the page's centre (x right, z up the page), size = biggest side in page widths. */
+export type ArPiece = { id?: string; m: string; x: number; z: number; s: number; r?: number; anim?: string };
+export type ArScene = { props: ArPiece[]; actors: ArPiece[] };
+/** `at`: the word's position in the page text (0 = start), or `word`: the first word that matches exactly. */
+export type ArCue = { at?: number; word?: string; actor: string; action: string; x?: number; z?: number };
 export type Story = {
   id: string;
   title: string;

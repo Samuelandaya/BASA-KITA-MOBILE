@@ -1,3 +1,4 @@
+import type { ArScene } from '../content';
 // The messages that pass between the app and the Unity + Vuforia AR scene.
 // The Unity side is unity/BasaKitaAR/Assets/Scripts/BasaKitaBridge.cs; keep the two in step.
 //
@@ -19,7 +20,9 @@ export type ArMode = 'ground' | 'card';
 export type ToUnity =
   | { method: 'Configure'; payload: { licenseKey: string } }
   | { method: 'ShowCard'; payload: { word: string; mode: ArMode } }
-  | { method: 'ShowPage'; payload: { target: string; models: string[]; widthMeters: number } }
+  | { method: 'ShowPage'; payload: { target: string; models: string[]; widthMeters: number; scene?: ArScene } }
+  | { method: 'Cue'; payload: { actor: string; action: string; x: number; z: number } }
+  | { method: 'ResetScene'; payload: Record<string, never> }
   | { method: 'Stop'; payload: Record<string, never> };
 
 export type FromUnity =
@@ -33,7 +36,9 @@ export const configure = (licenseKey: string): ToUnity => ({ method: 'Configure'
 export const showCard = (word: string, mode: ArMode): ToUnity => ({ method: 'ShowCard', payload: { word, mode } });
 export const stop = (): ToUnity => ({ method: 'Stop', payload: {} });
 /** A printed A4 page is about 21 cm wide; Vuforia uses this to size the 3D models. */
-export const showPage = (target: string, models: string[], widthMeters = 0.21): ToUnity => ({ method: 'ShowPage', payload: { target, models, widthMeters } });
+export const showPage = (target: string, models: string[], widthMeters = 0.21, scene?: ArScene): ToUnity => ({ method: 'ShowPage', payload: { target, models, widthMeters, scene } });
+export const cue = (actor: string, action: string, x = 0, z = 0): ToUnity => ({ method: 'Cue', payload: { actor, action, x, z } });
+export const resetScene = (): ToUnity => ({ method: 'ResetScene', payload: {} });
 
 /** Turns Unity's message text into a typed message, or null if it isn't one we know. */
 export function parseFromUnity(text: string): FromUnity | null {

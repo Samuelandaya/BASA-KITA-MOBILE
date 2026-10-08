@@ -34,7 +34,7 @@ export default function StoryPageAr() {
   return (
     <View style={st.screen}>
       {data?.arTarget && !missing ? (
-        <VuforiaView show={showPage(data.arTarget, data.arModels ?? [])} onState={setState} />
+        <VuforiaView show={showPage(data.arTarget, data.arModels ?? [], 0.21, data.arScene)} onState={setState} />
       ) : null}
       <SafeAreaView style={st.overlay} pointerEvents="box-none">
         <View style={st.top}>
