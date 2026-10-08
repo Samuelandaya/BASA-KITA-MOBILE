@@ -38,6 +38,7 @@ export type Story = {
   pages: StoryPage[];
   quiz: Quiz;
   credit?: string; // author and owner, shown with the story
+  arBook?: string; // the 3D book model for AR (unity StreamingAssets/models/<arBook>.glb)
   questions?: Quiz[]; // more comprehension questions after `quiz`
 };
 export type Lesson = { id: number; letter: string; fil: string; eng: string };

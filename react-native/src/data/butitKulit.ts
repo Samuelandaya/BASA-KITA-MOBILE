@@ -16,6 +16,7 @@ export const BUTIT_KULIT: Story = {
   color: '#46B97B',
   cover: 'butit/cover.jpg',
   credit: 'Kuwento at iginuhit ni Joan D. Mayo · DepEd Manila',
+  arBook: 'book/butit-kulit', // made by tools/make-book-glb.py from the PDF pages
   summary: 'Isang kuwento tungkol kay Butit, ang makulit pero malambing na aso ng isang batang mapagmahal sa hayop.',
   blurb:
     'Ang maikling kuwentong ito ay tungkol sa isang aso na makulit pero malambing na alaga ng isang batang mapagmahal sa hayop. ' +

@@ -13,6 +13,9 @@ using Vuforia;
 /// App -> Unity:  Configure {"licenseKey":"..."}   ShowCard {"word":"bola","mode":"ground"|"card"}   Stop {}
 ///                ShowPage {"target":"butit-kulit-page-3","models":["aso"],"widthMeters":0.21,"scene":{...}}
 ///                Cue {"actor":"butit","action":"walkTo","x":0,"z":0.2}   ResetScene {}
+///                ShowBook {"model":"book/butit-kulit","page":3,"scene":{...}}   PlaceBook {}   MoveBook {}
+///                OpenBook {"page":3,"scene":{...}}   ShowBookPage {"page":4,"scene":{...}}
+/// Unity -> App (book): {"type":"book","state":"placing"|"placed"|"placed-surface"|"open"|"scene-ready"}
 /// Unity -> App:  ready, searching, tracking, lost, error   (see Say* methods below)
 /// </summary>
 public class BasaKitaBridge : MonoBehaviour
@@ -38,6 +41,7 @@ public class BasaKitaBridge : MonoBehaviour
     [Serializable] private class ShowCardMessage { public string word; public string mode; }
     [Serializable] private class ShowPageMessage { public string target; public string[] models; public float widthMeters; public StoryScene.Spec scene; }
     [Serializable] private class CueMessage { public string actor; public string action; public float x; public float z; }
+    [Serializable] private class BookMessage { public string model; public int page; public StoryScene.Spec scene; }
     [Serializable] private class OutMessage { public string type; public string word; public string mode; public string code; public string message; }
 
     private string word;
@@ -50,6 +54,9 @@ public class BasaKitaBridge : MonoBehaviour
     private ShowPageMessage pendingPage;
     private int pageRequest; // newest ShowPage wins when several load at once
     private StoryScene storyScene; // the page's 3D scene, when the page has one
+    private BookAR book; // the placed 3D storybook (ShowBook)
+    private BookMessage pendingBook;
+    private bool bookLoading;
     // Story pages made into Image Targets at runtime, by target name (StreamingAssets/pages/<name>.jpg).
     private readonly Dictionary<string, ImageTargetBehaviour> pageTargets = new Dictionary<string, ImageTargetBehaviour>();
 
@@ -124,16 +131,62 @@ public class BasaKitaBridge : MonoBehaviour
     public void Cue(string json)
     {
         var m = JsonUtility.FromJson<CueMessage>(json);
-        if (m != null && storyScene != null) storyScene.Cue(m.actor, m.action, m.x, m.z);
+        var s = book != null ? book.Scene : storyScene;
+        if (m != null && s != null) s.Cue(m.actor, m.action, m.x, m.z);
     }
 
     public void ResetScene(string _)
     {
-        if (storyScene != null) storyScene.ResetScene();
+        var s = book != null ? book.Scene : storyScene;
+        if (s != null) s.ResetScene();
+    }
+
+    // ---- the 3D storybook placed in the room (no printed book needed) ----
+
+    public async void ShowBook(string json)
+    {
+        var m = JsonUtility.FromJson<BookMessage>(json);
+        if (m == null || string.IsNullOrEmpty(m.model)) return;
+        pendingBook = m;
+        mode = "book";
+        if (!vuforiaRunning || bookLoading) return; // OnVuforiaStarted calls again
+        await LoadBook(m);
+    }
+
+    private async Task LoadBook(BookMessage m)
+    {
+        Unwatch();
+        if (model != null) Destroy(model);
+        model = null;
+        storyScene = null;
+        foreach (var t in pageTargets.Values) if (t != null) t.enabled = false;
+        if (book != null) { book.StartPlacing(); return; }
+        bookLoading = true;
+        book = await BookAR.Create(m.model, planeFinder, groundStage, LoadRaw, state => Say(new OutMessage { type = "book", mode = state }));
+        bookLoading = false;
+        if (book == null) SayError("MODEL", "Could not load the book " + m.model);
+    }
+
+    public void PlaceBook(string _) { if (book != null) book.Place(); }
+
+    public void MoveBook(string _) { if (book != null) book.StartPlacing(); }
+
+    public void OpenBook(string json)
+    {
+        var m = JsonUtility.FromJson<BookMessage>(json);
+        if (book != null && m != null) book.Open(m.scene, m.page, LoadModel);
+    }
+
+    public void ShowBookPage(string json)
+    {
+        var m = JsonUtility.FromJson<BookMessage>(json);
+        if (book != null && m != null) book.ShowPage(m.scene, m.page, LoadModel);
     }
 
     public void Stop(string _)
     {
+        pendingBook = null;
+        if (book != null) { Destroy(book.gameObject); book = null; }
         pendingPage = null;
         pageRequest++;
         storyScene = null;
@@ -149,7 +202,8 @@ public class BasaKitaBridge : MonoBehaviour
     private async void OnVuforiaStarted()
     {
         vuforiaRunning = true;
-        if (pendingPage != null) await PlacePage(pendingPage);
+        if (pendingBook != null && book == null && !bookLoading) await LoadBook(pendingBook);
+        else if (pendingPage != null) await PlacePage(pendingPage);
     }
 
     private async Task PlacePage(ShowPageMessage m)
@@ -261,6 +315,7 @@ public class BasaKitaBridge : MonoBehaviour
     // The first time the phone finds a flat surface, the picture is placed there on its own (no tap needed).
     private void OnAutomaticHitTest(HitTestResult result)
     {
+        if (book != null) { book.OnPlaneHit(result); return; }
         if (placed || mode != "ground" || model == null || result == null) return;
         var positioning = planeFinder.GetComponent<ContentPositioningBehaviour>();
         if (positioning == null) return;
@@ -299,6 +354,19 @@ public class BasaKitaBridge : MonoBehaviour
     // ---- 3D pictures: the same .glb files as the Kotlin app, in StreamingAssets/models ----
 
     private Task<GameObject> LoadModel(string w) => LoadModel(w, modelSize);
+
+    /// <summary>Loads a model at its own size and orientation (the storybook), active.</summary>
+    private async Task<GameObject> LoadRaw(string w)
+    {
+        var url = Application.streamingAssetsPath + "/models/" + w + ".glb";
+        if (!url.Contains("://")) url = "file://" + url;
+        var gltf = new GltfImport();
+        if (!await gltf.Load(url)) return null;
+        var go = new GameObject(w);
+        if (await gltf.InstantiateMainSceneAsync(go.transform)) return go;
+        Destroy(go);
+        return null;
+    }
 
     private async Task<GameObject> LoadModel(string w, float size)
     {

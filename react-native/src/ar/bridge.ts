@@ -23,6 +23,9 @@ export type ToUnity =
   | { method: 'ShowPage'; payload: { target: string; models: string[]; widthMeters: number; scene?: ArScene } }
   | { method: 'Cue'; payload: { actor: string; action: string; x: number; z: number } }
   | { method: 'ResetScene'; payload: Record<string, never> }
+  | { method: 'ShowBook'; payload: { model: string; page: number; scene?: ArScene } }
+  | { method: 'PlaceBook' | 'MoveBook'; payload: Record<string, never> }
+  | { method: 'OpenBook' | 'ShowBookPage'; payload: { page: number; scene?: ArScene } }
   | { method: 'Stop'; payload: Record<string, never> };
 
 export type FromUnity =
@@ -30,7 +33,11 @@ export type FromUnity =
   | { type: 'searching'; mode: ArMode } // looking for a surface or a card
   | { type: 'tracking'; word: string } // the 3D picture is showing
   | { type: 'lost'; word: string } // the card or surface went out of view
-  | { type: 'error'; code: string; message: string };
+  | { type: 'error'; code: string; message: string }
+  | { type: 'book'; state: BookState };
+
+/** The placed 3D storybook: being placed, placed (closed), open, and when a page's scene has loaded. */
+export type BookState = 'placing' | 'placed' | 'placed-surface' | 'open' | 'scene-ready';
 
 export const configure = (licenseKey: string): ToUnity => ({ method: 'Configure', payload: { licenseKey } });
 export const showCard = (word: string, mode: ArMode): ToUnity => ({ method: 'ShowCard', payload: { word, mode } });
@@ -39,6 +46,13 @@ export const stop = (): ToUnity => ({ method: 'Stop', payload: {} });
 export const showPage = (target: string, models: string[], widthMeters = 0.21, scene?: ArScene): ToUnity => ({ method: 'ShowPage', payload: { target, models, widthMeters, scene } });
 export const cue = (actor: string, action: string, x = 0, z = 0): ToUnity => ({ method: 'Cue', payload: { actor, action, x, z } });
 export const resetScene = (): ToUnity => ({ method: 'ResetScene', payload: {} });
+/** The 3D storybook (unity StreamingAssets/models/<model>.glb) appears in front of the camera to be placed. */
+export const showBook = (model: string, page: number, scene?: ArScene): ToUnity => ({ method: 'ShowBook', payload: { model, page, scene } });
+export const placeBook = (): ToUnity => ({ method: 'PlaceBook', payload: {} });
+export const moveBook = (): ToUnity => ({ method: 'MoveBook', payload: {} });
+/** `page` is the printed page number (Butit Kulit's story starts on page 3). */
+export const openBook = (page: number, scene?: ArScene): ToUnity => ({ method: 'OpenBook', payload: { page, scene } });
+export const showBookPage = (page: number, scene?: ArScene): ToUnity => ({ method: 'ShowBookPage', payload: { page, scene } });
 
 /** Turns Unity's message text into a typed message, or null if it isn't one we know. */
 export function parseFromUnity(text: string): FromUnity | null {
@@ -61,6 +75,8 @@ export function parseFromUnity(text: string): FromUnity | null {
       return { type: o.type, word: str('word') };
     case 'error':
       return { type: 'error', code: str('code') || 'UNKNOWN', message: str('message') };
+    case 'book':
+      return ['placing', 'placed', 'placed-surface', 'open', 'scene-ready'].includes(str('mode')) ? { type: 'book', state: str('mode') as BookState } : null;
     default:
       return null;
   }
@@ -74,6 +90,7 @@ export function arMessage(state: FromUnity | { type: 'starting' }, eng: string, 
   switch (state.type) {
     case 'starting':
     case 'ready':
+    case 'book':
       return 'Getting the camera ready…';
     case 'searching':
       return mode === 'card'
@@ -95,6 +112,7 @@ export function pageArMessage(state: FromUnity | { type: 'starting' }, page: num
   switch (state.type) {
     case 'starting':
     case 'ready':
+    case 'book':
       return 'Getting the camera ready…';
     case 'searching':
       return `Point the camera at page ${page} of the book.`;
