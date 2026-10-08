@@ -3,9 +3,25 @@
   "compilerOptions": {
     "strict": true,
     "allowJs": true,
-    "types": ["node", "jest"],
-    "paths": { "@/*": ["./src/*"] }
+    "types": [
+      "node",
+      "jest"
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx", "src/shared/**/*.js", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["node_modules", "unity", "android", "ios"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "src/shared/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "unity",
+    "android",
+    "ios"
+  ]
 }

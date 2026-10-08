@@ -186,8 +186,8 @@ public class BasaKitaBridge : MonoBehaviour
             storyScene = built;
             model = built.gameObject;
             model.SetActive(false);
-            Watch(target);
             Say(new OutMessage { type = "searching", mode = "page" });
+            Watch(target);
             return;
         }
         storyScene = null;
@@ -208,8 +208,8 @@ public class BasaKitaBridge : MonoBehaviour
         model = scene;
         Attach(target.transform);
         model.SetActive(false);
-        Watch(target);
         Say(new OutMessage { type = "searching", mode = "page" });
+        Watch(target);
     }
 
     private void OnVuforiaInitialized(VuforiaInitError error)
@@ -241,6 +241,7 @@ public class BasaKitaBridge : MonoBehaviour
                 return;
             }
             Attach(target);
+            Say(new OutMessage { type = "searching", mode = mode });
             Watch(target.GetComponent<ObserverBehaviour>());
         }
         else
@@ -252,9 +253,9 @@ public class BasaKitaBridge : MonoBehaviour
             }
             planeFinder.gameObject.SetActive(true);
             Attach(groundStage.transform);
+            Say(new OutMessage { type = "searching", mode = mode });
             Watch(groundStage);
         }
-        Say(new OutMessage { type = "searching", mode = mode });
     }
 
     // The first time the phone finds a flat surface, the picture is placed there on its own (no tap needed).
@@ -269,10 +270,15 @@ public class BasaKitaBridge : MonoBehaviour
         placed = true;
     }
 
+    // Call after telling the app "searching": if the page or card is already in view (it can be
+    // found while the 3D scene is still loading), Vuforia won't report a change, so apply it now.
     private void Watch(ObserverBehaviour observer)
     {
         watched = observer;
-        if (watched != null) watched.OnTargetStatusChanged += OnTargetStatusChanged;
+        if (watched == null) return;
+        watched.OnTargetStatusChanged += OnTargetStatusChanged;
+        var now = watched.TargetStatus;
+        if (now.Status == Status.TRACKED || now.Status == Status.EXTENDED_TRACKED) OnTargetStatusChanged(watched, now);
     }
 
     private void Unwatch()
@@ -283,6 +289,7 @@ public class BasaKitaBridge : MonoBehaviour
 
     private void OnTargetStatusChanged(ObserverBehaviour observer, TargetStatus status)
     {
+        Debug.Log("[BASA-KITA] " + observer.TargetName + ": " + status.Status + " / " + status.StatusInfo);
         bool visible = status.Status == Status.TRACKED || status.Status == Status.EXTENDED_TRACKED;
         if (model != null) model.SetActive(visible);
         if (visible && storyScene != null) storyScene.OnShown();
