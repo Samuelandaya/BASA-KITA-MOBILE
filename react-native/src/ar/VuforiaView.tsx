@@ -14,7 +14,12 @@ const UnityView: ComponentType<UnityProps> | null = unityAvailable ? require('@a
  * (`show`: a flashcard, see showCard, or a story page, see showPage) to Unity and reports what
  * Unity sees through `onState`.
  */
-export function VuforiaView({ show, onState }: { show: ToUnity; onState: (s: FromUnity) => void }) {
+export function VuforiaView({ show, onState, onSender }: {
+  show: ToUnity;
+  onState: (s: FromUnity) => void;
+  /** Gets a function for sending more messages to Unity (story cues, reset), once Unity has the key. */
+  onSender?: (send: ((m: ToUnity) => void) | null) => void;
+}) {
   const ref = useRef<UnityRef>(null);
   const [started, setStarted] = useState(false);
 
@@ -34,6 +39,10 @@ export function VuforiaView({ show, onState }: { show: ToUnity; onState: (s: Fro
   useEffect(() => {
     if (started) send(show);
   }, [started, showKey]);
+
+  useEffect(() => {
+    onSender?.(started ? send : null);
+  }, [started]);
 
   useEffect(() => () => send(stop()), []);
 

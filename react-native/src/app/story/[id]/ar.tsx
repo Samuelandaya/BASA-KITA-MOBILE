@@ -1,13 +1,17 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { isPlaceholderKey, pageArMessage, showPage, type FromUnity } from '../../../ar/bridge';
+import { cue, isPlaceholderKey, pageArMessage, resetScene, showPage, type FromUnity, type ToUnity } from '../../../ar/bridge';
 import { unityAvailable, vuforiaLicenseKey } from '../../../ar/config';
+import { cuesBetween, timeCues } from '../../../ar/cues';
 import { VuforiaView } from '../../../ar/VuforiaView';
 import { storyById } from '../../../content';
+import { speak, stopSpeaking } from '../../../services/speech';
+import { useApp } from '../../../state/AppState';
 import { C, T } from '../../../ui/theme';
+import { splitWords, wordAt } from '../../../words';
 
 /**
  * AR for one story page: point the camera at that page of the printed book (or the PDF on another
@@ -29,12 +33,90 @@ export default function StoryPageAr() {
       ? 'AR needs a Vuforia license key. Add EXPO_PUBLIC_VUFORIA_LICENSE_KEY to .env.local and build again.'
       : null;
   const message = !data?.arTarget ? 'This page has no AR.' : missing ?? pageArMessage(state, printed);
-  const go = (to: number) => { setState({ type: 'starting' }); setPage(to); };
+  const go = (to: number) => { stopReading(); setState({ type: 'starting' }); setPage(to); };
+
+  // ---- reading the page aloud while the characters act it out ----
+  const app = useApp();
+  const text = data?.text ?? '';
+  const words = useMemo(() => splitWords(text), [text]);
+  const timed = useMemo(() => timeCues(text, data?.arCues), [text, data?.arCues]);
+  const send = useRef<((m: ToUnity) => void) | null>(null);
+  const fired = useRef(-1); // cues up to this word have been sent
+  const resumeAt = useRef(0); // word to continue from after a pause
+  const stopping = useRef(false);
+  const pausedByLoss = useRef(false);
+  const [playing, setPlaying] = useState(false);
+  const [current, setCurrent] = useState(-1);
+  const [seen, setSeen] = useState(false);
+  const canPlay = timed.length > 0 && words.length > 0;
+
+  const fire = (upTo: number) => {
+    for (const t of cuesBetween(timed, fired.current, upTo)) send.current?.(cue(t.cue.actor, t.cue.action, t.cue.x ?? 0, t.cue.z ?? 0));
+    fired.current = Math.max(fired.current, upTo);
+  };
+
+  const play = (from: number) => {
+    if (!send.current) return;
+    if (from === 0) {
+      send.current(resetScene());
+      fired.current = -1;
+    }
+    fire(from);
+    const offset = words[from]?.start ?? 0;
+    stopping.current = false;
+    setPlaying(true);
+    setCurrent(from);
+    speak(text.slice(offset), {
+      lang: story?.lang,
+      rate: app.settings.speed,
+      volume: app.settings.volume / 100,
+      onWord: (ci) => {
+        const i = wordAt(words, offset + ci);
+        if (i < 0) return;
+        setCurrent(i);
+        resumeAt.current = i;
+        fire(i);
+      },
+      onDone: () => {
+        setPlaying(false);
+        if (stopping.current) return; // paused: keep the place
+        fire(words.length - 1);
+        resumeAt.current = 0;
+        setCurrent(-1);
+      },
+    });
+  };
+
+  function stopReading() {
+    stopping.current = true;
+    stopSpeaking();
+    setPlaying(false);
+  }
+
+  const restart = () => { stopReading(); resumeAt.current = 0; play(0); };
+
+  // A new page starts from the top; leaving the screen stops the voice.
+  useEffect(() => {
+    resumeAt.current = 0; fired.current = -1; pausedByLoss.current = false;
+    setCurrent(-1); setSeen(false);
+  }, [page]);
+  useEffect(() => () => { stopping.current = true; stopSpeaking(); }, []);
+
+  // When the camera loses the page, pause; carry on when it finds it again.
+  useEffect(() => {
+    if (state.type === 'tracking') {
+      setSeen(true);
+      if (pausedByLoss.current) { pausedByLoss.current = false; play(resumeAt.current); }
+    } else if (state.type === 'lost' && playing) {
+      pausedByLoss.current = true;
+      stopReading();
+    }
+  }, [state.type]);
 
   return (
     <View style={st.screen}>
       {data?.arTarget && !missing ? (
-        <VuforiaView show={showPage(data.arTarget, data.arModels ?? [], 0.21, data.arScene)} onState={setState} />
+        <VuforiaView show={showPage(data.arTarget, data.arModels ?? [], 0.21, data.arScene)} onState={setState} onSender={(f) => { send.current = f; }} />
       ) : null}
       <SafeAreaView style={st.overlay} pointerEvents="box-none">
         <View style={st.top}>
@@ -46,7 +128,28 @@ export default function StoryPageAr() {
           </View>
         </View>
         <View style={{ flex: 1 }} />
-        <Text accessibilityLiveRegion="polite" style={[T.body(16, C.navy, 'ExtraBold'), st.message]}>{message}</Text>
+        {canPlay && seen && !missing ? (
+          <View style={st.reader}>
+            <Text style={st.subtitle} accessibilityLabel={text}>
+              {words.map((w, i) => (
+                <Text key={i} style={[T.body(17, C.ink, 'Bold'), i === current && st.now]}>{w.word}{' '}</Text>
+              ))}
+            </Text>
+            {state.type === 'lost' ? <Text style={T.body(14, C.orangeDark, 'ExtraBold')}>{message}</Text> : null}
+            <View style={st.controls}>
+              <Pressable accessibilityRole="button" accessibilityLabel={playing ? 'Pause' : 'Play'} onPress={() => (playing ? stopReading() : play(resumeAt.current))} style={[st.pill, st.primary]}>
+                <Ionicons name={playing ? 'pause' : 'play'} size={20} color={C.ink} />
+                <Text style={T.body(15, C.ink, 'ExtraBold')}>{playing ? 'Pause' : resumeAt.current > 0 ? 'Continue' : 'Play'}</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="Read again from the start" onPress={restart} style={st.pill}>
+                <Ionicons name="refresh" size={20} color={C.ink} />
+                <Text style={T.body(15, C.ink, 'ExtraBold')}>Replay</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          <Text accessibilityLiveRegion="polite" style={[T.body(16, C.navy, 'ExtraBold'), st.message]}>{message}</Text>
+        )}
         {story ? (
           <View style={st.nav}>
             <Pressable accessibilityRole="button" accessibilityLabel="Previous page" disabled={page === 1} onPress={() => go(page - 1)} style={[st.round, page === 1 && st.off]}>
@@ -73,4 +176,10 @@ const st = StyleSheet.create({
   message: { backgroundColor: C.white, borderRadius: 20, padding: 16, textAlign: 'center', overflow: 'hidden' },
   nav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20 },
   count: { minWidth: 60, textAlign: 'center' },
+  reader: { backgroundColor: C.white, borderRadius: 20, padding: 14, gap: 10 },
+  subtitle: { lineHeight: 26 },
+  now: { backgroundColor: C.yellow, borderRadius: 6 },
+  controls: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 24, paddingHorizontal: 18, paddingVertical: 10, backgroundColor: C.cream2 },
+  primary: { backgroundColor: C.orange },
 });

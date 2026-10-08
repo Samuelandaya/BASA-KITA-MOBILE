@@ -70,7 +70,12 @@ export default function Read() {
       )}
       <Text style={T.body(13, C.muted, 'ExtraBold')}>Page {page} of {story.pages.length}</Text>
       <Bar pct={(page / story.pages.length) * 100} color={C.orange} />
-      <Card>
+      {!text ? (
+        <Card>
+          <Text style={T.body(18, C.muted, 'Bold')}>This page is a picture. Look at what Butit and the girl are doing!</Text>
+        </Card>
+      ) : null}
+      {text ? <Card>
         <Text style={st.words} accessibilityLabel={text}>
           {words.map((w, i) => (
             <Text
@@ -82,7 +87,7 @@ export default function Read() {
             </Text>
           ))}
         </Text>
-      </Card>
+      </Card> : null}
       {picked ? (
         <Card color={C.paleGreen}>
           <Text style={T.head(22, C.greenText, 'Bold')}>{cleanWord(picked)}</Text>
@@ -97,7 +102,7 @@ export default function Read() {
           onPress={() => { stopSpeaking(); router.push({ pathname: '/story/[id]/ar', params: { id: story.id, page: String(page) } }); }}
         />
       ) : null}
-      <Btn label={reading ? 'Stop' : 'Read this page to me'} icon={reading ? 'stop' : 'volume-high'} kind="blue" onPress={() => (reading ? stopSpeaking() : readPage())} />
+      {text ? <Btn label={reading ? 'Stop' : 'Read this page to me'} icon={reading ? 'stop' : 'volume-high'} kind="blue" onPress={() => (reading ? stopSpeaking() : readPage())} /> : null}
       <View style={st.nav}>
         <Btn label="Back" icon="chevron-back" kind="white" disabled={page === 1} onPress={() => setPage((p) => p - 1)} style={{ flex: 1 }} />
         <Btn
