@@ -1,0 +1,58 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# Unity export (made on a computer with Unity; see unity/README.md)
+/unity/builds/
+/unity/BasaKitaAR/Library/
+/unity/BasaKitaAR/Temp/
+/unity/BasaKitaAR/Logs/
+/unity/BasaKitaAR/UserSettings/
+/unity/BasaKitaAR/obj/
+.env.local
+# Vuforia Engine package (about 138 MB, over GitHub's file limit). Get it from the Vuforia developer portal; see unity/README.md
+/unity/BasaKitaAR/Packages/com.ptc.vuforia.engine-*.tgz
+# Made by Vuforia on first use and holds a per-machine key; BASA-KITA -> 1. Set up AR scene recreates it
+/unity/BasaKitaAR/Assets/Resources/VuforiaConfiguration.asset
+/unity/BasaKitaAR/Assets/Resources/VuforiaConfiguration.asset.meta
+# Written into Assets/Resources by Vuforia and the test framework during a build
+/unity/BasaKitaAR/Assets/Resources/PerformanceTestRun*
+/unity/BasaKitaAR/Assets/Resources/alpha.shader*

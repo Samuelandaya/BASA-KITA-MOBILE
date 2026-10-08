@@ -1,0 +1,123 @@
+diff --git a/node_modules/@azesmway/react-native-unity/android/build.gradle b/node_modules/@azesmway/react-native-unity/android/build.gradle
+index a10543a..e0f1645 100644
+--- a/node_modules/@azesmway/react-native-unity/android/build.gradle
++++ b/node_modules/@azesmway/react-native-unity/android/build.gradle
+@@ -98,7 +98,6 @@ repositories {
+   }
+   google()
+   mavenCentral()
+-  jcenter()
+ }
+ 
+ 
+diff --git a/node_modules/@azesmway/react-native-unity/lib/commonjs/UnityView.js b/node_modules/@azesmway/react-native-unity/lib/commonjs/UnityView.js
+index 39cf3e1..2db8216 100644
+--- a/node_modules/@azesmway/react-native-unity/lib/commonjs/UnityView.js
++++ b/node_modules/@azesmway/react-native-unity/lib/commonjs/UnityView.js
+@@ -20,7 +20,7 @@ class UnityView extends _react.default.Component {
+   };
+   unloadUnity = () => {
+     if (this.ref.current) {
+-      _UnityViewNativeComponent.Commands.unloadUnity(this.ref.current);
++      _UnityViewNativeComponent.Commands.pauseUnity(this.ref.current, true);
+     }
+   };
+   pauseUnity(pause) {
+@@ -44,13 +44,18 @@ class UnityView extends _react.default.Component {
+       ...this.props
+     };
+   }
++  componentDidMount() {
++    if (this.ref.current) {
++      _UnityViewNativeComponent.Commands.resumeUnity(this.ref.current);
++    }
++  }
++
+   componentWillUnmount() {
+-    // Full React unmount is a permanent teardown, so we unload the engine here.
+-    // This is intentionally different from Fabric view *recycling*
+-    // (RNUnityView.prepareForRecycle), which only pauses the shared instance so
+-    // it can be reused on the next mount. See issue #180.
++    // BASA-KITA patch: pause instead of unload. Unity as a Library cannot start a second
++    // player in the same process (Unity 6 crashes with "Graphics device is null"), so the
++    // AR screen keeps one Unity alive: paused when it closes, resumed when it opens again.
+     if (this.ref.current) {
+-      _UnityViewNativeComponent.Commands.unloadUnity(this.ref.current);
++      _UnityViewNativeComponent.Commands.pauseUnity(this.ref.current, true);
+     }
+   }
+   render() {
+diff --git a/node_modules/@azesmway/react-native-unity/lib/module/UnityView.js b/node_modules/@azesmway/react-native-unity/lib/module/UnityView.js
+index 7c05697..a2ed705 100644
+--- a/node_modules/@azesmway/react-native-unity/lib/module/UnityView.js
++++ b/node_modules/@azesmway/react-native-unity/lib/module/UnityView.js
+@@ -11,7 +11,7 @@ export default class UnityView extends React.Component {
+   };
+   unloadUnity = () => {
+     if (this.ref.current) {
+-      Commands.unloadUnity(this.ref.current);
++      Commands.pauseUnity(this.ref.current, true);
+     }
+   };
+   pauseUnity(pause) {
+@@ -35,13 +35,18 @@ export default class UnityView extends React.Component {
+       ...this.props
+     };
+   }
++  componentDidMount() {
++    if (this.ref.current) {
++      Commands.resumeUnity(this.ref.current);
++    }
++  }
++
+   componentWillUnmount() {
+-    // Full React unmount is a permanent teardown, so we unload the engine here.
+-    // This is intentionally different from Fabric view *recycling*
+-    // (RNUnityView.prepareForRecycle), which only pauses the shared instance so
+-    // it can be reused on the next mount. See issue #180.
++    // BASA-KITA patch: pause instead of unload. Unity as a Library cannot start a second
++    // player in the same process (Unity 6 crashes with "Graphics device is null"), so the
++    // AR screen keeps one Unity alive: paused when it closes, resumed when it opens again.
+     if (this.ref.current) {
+-      Commands.unloadUnity(this.ref.current);
++      Commands.pauseUnity(this.ref.current, true);
+     }
+   }
+   render() {
+diff --git a/node_modules/@azesmway/react-native-unity/src/UnityView.tsx b/node_modules/@azesmway/react-native-unity/src/UnityView.tsx
+index 87e6df6..5019604 100644
+--- a/node_modules/@azesmway/react-native-unity/src/UnityView.tsx
++++ b/node_modules/@azesmway/react-native-unity/src/UnityView.tsx
+@@ -34,7 +34,7 @@ export default class UnityView extends React.Component<RNUnityViewProps> {
+ 
+   public unloadUnity = () => {
+     if (this.ref.current) {
+-      Commands.unloadUnity(this.ref.current);
++      Commands.pauseUnity(this.ref.current, true);
+     }
+   };
+ 
+@@ -64,13 +64,18 @@ export default class UnityView extends React.Component<RNUnityViewProps> {
+     };
+   }
+ 
++  componentDidMount() {
++    if (this.ref.current) {
++      Commands.resumeUnity(this.ref.current);
++    }
++  }
++
+   componentWillUnmount() {
+-    // Full React unmount is a permanent teardown, so we unload the engine here.
+-    // This is intentionally different from Fabric view *recycling*
+-    // (RNUnityView.prepareForRecycle), which only pauses the shared instance so
+-    // it can be reused on the next mount. See issue #180.
++    // BASA-KITA patch: pause instead of unload. Unity as a Library cannot start a second
++    // player in the same process (Unity 6 crashes with "Graphics device is null"), so the
++    // AR screen keeps one Unity alive: paused when it closes, resumed when it opens again.
+     if (this.ref.current) {
+-      Commands.unloadUnity(this.ref.current);
++      Commands.pauseUnity(this.ref.current, true);
+     }
+   }
+ 

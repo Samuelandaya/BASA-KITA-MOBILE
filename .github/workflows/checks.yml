@@ -34,3 +34,47 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+
+  react-native:
+    name: React Native typecheck + tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: react-native/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test -- --ci
+
+  react-native-android:
+    name: React Native Android build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: react-native/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      # The native build fills the runner's disk, so remove big tools this job doesn't use.
+      - run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL && df -h /
+      - run: npm ci
+      # Builds without the Unity export (that needs Unity on a computer), so this checks everything else compiles.
+      - run: npx expo prebuild --platform android --no-install
+      # One CPU type (most phones) keeps the build small and fast.
+      - run: ./gradlew --no-daemon assembleDebug -PreactNativeArchitectures=arm64-v8a
+        working-directory: react-native/android
