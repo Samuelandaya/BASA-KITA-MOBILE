@@ -1,0 +1,42 @@
+# Builds an installable Android APK of the React Native app (no computer or Metro needed to run it).
+# Runs on every push to this branch; download the APK from the run's "Artifacts" section.
+name: Android APK
+
+on:
+  push:
+    branches: [claude/android-apk]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    name: Build release APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: react-native/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      # The native build fills the runner's disk, so remove big tools this job doesn't use.
+      - run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL && df -h /
+      - run: npm ci
+      # Builds without the Unity export (that needs Unity on a computer); the AR screen says so in the app.
+      - run: npx expo prebuild --platform android --no-install
+      # Release build: the app's code is bundled inside, so it runs on a phone by itself.
+      # It is signed with the standard debug key, which is fine for installing on your own phone.
+      - run: ./gradlew --no-daemon assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+        working-directory: react-native/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BASA-KITA-apk
+          path: react-native/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
