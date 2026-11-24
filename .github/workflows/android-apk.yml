@@ -5,7 +5,11 @@ name: Android APK
 on:
   push:
     branches: [claude/android-apk]
+    paths-ignore: ['.github/workflows/publish-apk.yml']
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   apk:
@@ -40,3 +44,14 @@ jobs:
           name: BASA-KITA-apk
           path: react-native/android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+      # Also puts the APK on the repo's Releases page (tag apk-latest), so it can be downloaded
+      # straight onto a phone from GitHub.
+      - name: Publish to the apk-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk BASA-KITA.apk
+          gh release delete apk-latest --yes --cleanup-tag || true
+          gh release create apk-latest BASA-KITA.apk --prerelease --target "$GITHUB_SHA" \
+            --title "BASA-KITA Android APK (latest test build)" \
+            --notes "Test build of the React Native app for installing on an Android phone (Android 10+). AR is not in this build yet."

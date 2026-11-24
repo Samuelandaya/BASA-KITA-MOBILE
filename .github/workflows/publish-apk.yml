@@ -1,0 +1,33 @@
+# One-time helper: puts the APK from an already finished "Android APK" run on the Releases page
+# (tag apk-latest), without building again.
+name: Publish existing APK
+
+on:
+  push:
+    branches: [claude/android-apk]
+    paths: ['.github/workflows/publish-apk.yml']
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: BASA-KITA-apk
+          run-id: 45412992376
+          github-token: ${{ github.token }}
+      - name: Publish to the apk-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          ls -la
+          cp app-release.apk BASA-KITA.apk
+          gh release delete apk-latest --yes --cleanup-tag || true
+          gh release create apk-latest BASA-KITA.apk --prerelease --target "$GITHUB_SHA" \
+            --title "BASA-KITA Android APK (latest test build)" \
+            --notes "Test build of the React Native app for installing on an Android phone (Android 10+). AR is not in this build yet."
