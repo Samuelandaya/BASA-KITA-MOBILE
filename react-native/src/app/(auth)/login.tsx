@@ -29,15 +29,18 @@ export default function Login() {
 
   return (
     <Page title="Log in">
+      <Text style={[T.head(26, C.navy, 'Bold'), { textAlign: 'center' }]}>Welcome back!</Text>
+      <Text style={[T.body(15, C.muted), { textAlign: 'center' }]}>Sign in to start reading.</Text>
       <Card>
         <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" placeholder="you@example.com" />
         <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" placeholder="Your password" />
+        <Text accessibilityRole="link" onPress={() => router.push('/forgot')} style={[T.body(14, C.blueBtn, 'ExtraBold'), { alignSelf: 'flex-end' }]}>
+          Forgot password?
+        </Text>
         <ErrorText text={error} />
-        <Btn label={busy ? 'Logging in…' : 'Log in'} onPress={submit} disabled={busy} />
+        <Btn label={busy ? 'Logging in…' : 'Log in'} onPress={submit} disabled={busy} kind="blue" />
       </Card>
-      <Text style={T.body(13, C.muted)}>
-        Demo accounts (any password): sam@basakita.ph is a returning learner, admin@basakita.ph is a teacher, any other email is a new learner.
-      </Text>
+      <Text style={[T.body(14, C.muted), { textAlign: 'center' }]}>Don’t have an account yet?</Text>
       <Btn label="Create an account" kind="white" onPress={() => router.replace('/signup')} />
     </Page>
   );

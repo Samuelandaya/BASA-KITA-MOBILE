@@ -28,6 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-font',
     'expo-image',
+    ['expo-image-picker', { cameraPermission: 'BASA-KITA uses the camera to scan objects and make flashcards.', microphonePermission: false }],
     ['expo-splash-screen', { image: './assets/images/logo.png', imageWidth: 200, resizeMode: 'contain', backgroundColor: '#FFF9ED' }],
     // The Unity + Vuforia library needs Android 10 (API 29) or newer: Vuforia Engine 11.4 won't build below it.
     ['expo-build-properties', { android: { minSdkVersion: 29 } }],

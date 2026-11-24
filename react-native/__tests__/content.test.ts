@@ -61,3 +61,16 @@ describe('word highlighting', () => {
     expect(cleanWord('“Hello,')).toBe('hello');
   });
 });
+
+import { syllables } from '../src/words';
+
+describe('syllables', () => {
+  it('splits Filipino words the Marungko way', () => {
+    expect(syllables('aso')).toEqual(['a', 'so']);
+    expect(syllables('paaralan')).toEqual(['pa', 'a', 'ra', 'lan']);
+    expect(syllables('gatas')).toEqual(['ga', 'tas']);
+    expect(syllables('Inay')).toEqual(['i', 'nay']);
+    expect(syllables('nagising')).toEqual(['na', 'gi', 'sing']);
+    expect(syllables('Butit.')).toEqual(['bu', 'tit']);
+  });
+});

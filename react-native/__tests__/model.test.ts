@@ -50,3 +50,20 @@ describe('reading progress', () => {
     expect(M.toggleSaved(a, 'y').saved).toEqual(['x']);
   });
 });
+
+describe('flashcards', () => {
+  it('allows five scans a day and starts again the next day', () => {
+    const day1 = Date.UTC(2026, 10, 24, 3);
+    let a = M.EMPTY_ACCOUNT;
+    expect(M.scansLeft(a, day1)).toBe(5);
+    for (let i = 0; i < 5; i++) a = M.addCard(a, { fil: 'aso', eng: 'dog', lang: 'Filipino' }, day1 + i);
+    expect(a.cards).toHaveLength(5);
+    expect(M.scansLeft(a, day1)).toBe(0);
+    expect(M.scansLeft(a, day1 + 24 * 60 * 60 * 1000)).toBe(5);
+  });
+
+  it('remembers each practiced word once', () => {
+    const a = M.practiceWord(M.practiceWord(M.EMPTY_ACCOUNT, 'aso'), 'aso');
+    expect(a.words).toEqual(['aso']);
+  });
+});

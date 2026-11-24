@@ -17,6 +17,8 @@ type Api = M.SavedState & {
   toggleSaved: (id: string) => void;
   recordQuiz: (id: string, correct: number, total: number) => void;
   completeLesson: () => void;
+  addCard: (card: Omit<M.MadeCard, 'id' | 'made'>) => void;
+  practiceWord: (word: string) => void;
 };
 
 const Ctx = createContext<Api | null>(null);
@@ -55,6 +57,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       toggleSaved: (id) => change((a) => M.toggleSaved(a, id)),
       recordQuiz: (id, correct, total) => change((a) => M.recordQuiz(a, id, correct, total)),
       completeLesson: () => change(M.completeLesson),
+      addCard: (card) => change((a) => M.addCard(a, card)),
+      practiceWord: (word) => change((a) => M.practiceWord(a, word)),
     };
   }, [state, ready]);
 

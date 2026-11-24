@@ -11,7 +11,10 @@ import { cleanWord, meaningOf, splitWords, wordAt } from '../../../words';
 
 const SIZES = { Normal: 22, Big: 26, Bigger: 32 } as const;
 
-/** Listen: the story is read aloud page by page, with the word being read highlighted. Tap a word to hear it and see what it means. */
+/**
+ * Listen & Read Aloud (Figure 6): Listen plays the page with the word being read highlighted, Read opens
+ * Read & Learn, a tapped word is said aloud, and Next / Back turn the pages. The last page ends with Finish.
+ */
 export default function Read() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const app = useApp();
@@ -94,15 +97,10 @@ export default function Read() {
           <Text style={T.body(15)}>{vocab ? `${vocab.meaning} (${vocab.pair})` : 'Tap the speaker to hear it again.'}</Text>
         </Card>
       ) : null}
-      {pageData?.arTarget ? (
-        <Btn
-          label="See this page in AR"
-          icon="cube"
-          kind="white"
-          onPress={() => { stopSpeaking(); router.push({ pathname: '/story/[id]/ar', params: { id: story.id, page: String(page) } }); }}
-        />
-      ) : null}
-      {text ? <Btn label={reading ? 'Stop' : 'Read this page to me'} icon={reading ? 'stop' : 'volume-high'} kind="blue" onPress={() => (reading ? stopSpeaking() : readPage())} /> : null}
+      <View style={st.nav}>
+        <Btn label={reading ? 'Stop' : 'Listen'} icon={reading ? 'stop' : 'headset'} kind="white" disabled={!text} onPress={() => (reading ? stopSpeaking() : readPage())} style={{ flex: 1 }} />
+        <Btn label="Read" icon="book" kind="blue" onPress={() => { stopSpeaking(); router.push(`/story/${story.id}/learn`); }} style={{ flex: 1 }} />
+      </View>
       <View style={st.nav}>
         <Btn label="Back" icon="chevron-back" kind="white" disabled={page === 1} onPress={() => setPage((p) => p - 1)} style={{ flex: 1 }} />
         <Btn

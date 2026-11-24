@@ -5,10 +5,10 @@ import { shownLevel, storyById } from '../../../content';
 import { useApp } from '../../../state/AppState';
 import { percentRead } from '../../../state/model';
 import { Cover } from '../../../ui/Cover';
-import { Bar, Btn, Card, Page, Tag } from '../../../ui/kit';
+import { Bar, Card, Page, Tag } from '../../../ui/kit';
 import { C, T } from '../../../ui/theme';
 
-/** Story details: cover, what it is about, the letter sound it practices, and how to read it. */
+/** Story details (Figure 6): cover, what it is about, and the two reading modes. */
 export default function StoryDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const app = useApp();
@@ -38,13 +38,24 @@ export default function StoryDetails() {
       </View>
       <Text style={T.body(16)}>{story.blurb}</Text>
       {pct > 0 ? <Bar pct={pct} /> : null}
-      <Card color={C.paleBlue}>
-        <Text style={T.body(14, C.blueDark, 'ExtraBold')}>Sound of the story</Text>
-        <Text style={T.head(24, C.navy, 'Bold')}>{story.focus.letter} {story.focus.sound}</Text>
-        <Text style={T.body(14, C.muted)}>like “{story.focus.example}” and “{story.focus.exampleFil}”</Text>
+      {story.credit ? <Text style={T.body(13, C.muted, 'Bold')}>{story.credit}</Text> : null}
+      <Text style={T.head(22, C.navy, 'Bold')}>Choose your Reading Mode</Text>
+      <Card onPress={() => router.push(`/story/${story.id}/read`)} style={st.mode}>
+        <View style={[st.modeIcon, { backgroundColor: C.orange }]}><Ionicons name="headset" size={28} color={C.ink} /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={T.head(19, C.navy, 'Bold')}>{pct > 0 && pct < 100 ? 'Continue: ' : ''}Listen & Read Aloud</Text>
+          <Text style={T.body(13, C.muted)}>Hear each page while the words light up, then read it yourself.</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={22} color={C.muted} />
       </Card>
-      <Btn label={pct > 0 && pct < 100 ? 'Continue reading' : 'Listen to the story'} icon="headset" big onPress={() => router.push(`/story/${story.id}/read`)} />
-      <Text style={T.body(13, C.muted)}>Read and Learn, Read With Me and Read on My Own come in the next stage of the port.</Text>
+      <Card onPress={() => router.push(`/story/${story.id}/learn`)} style={st.mode}>
+        <View style={[st.modeIcon, { backgroundColor: C.blueBtn }]}><Ionicons name="school" size={28} color={C.white} /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={T.head(19, C.navy, 'Bold')}>Read & Learn</Text>
+          <Text style={T.body(13, C.muted)}>Learn the story’s words one at a time and sound them out.</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={22} color={C.muted} />
+      </Card>
     </Page>
   );
 }
@@ -53,4 +64,6 @@ const st = StyleSheet.create({
   cover: { borderRadius: 24, overflow: 'hidden', height: 240, alignItems: 'center', justifyContent: 'center' },
   heart: { position: 'absolute', top: 12, right: 12, width: 46, height: 46, borderRadius: 23, backgroundColor: C.white, alignItems: 'center', justifyContent: 'center' },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  mode: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  modeIcon: { width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
 });

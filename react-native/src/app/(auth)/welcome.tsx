@@ -12,7 +12,7 @@ export default function Welcome() {
         <Image source={PICTURES['kid-reading.png']} style={st.art} resizeMode="contain" />
         <Text style={[T.head(30, C.navy, 'Bold'), st.center]}>Let’s read together!</Text>
         <Text style={[T.body(16, C.muted), st.center]}>
-          Stories, letter sounds and 3D flashcards in Filipino and English, made for young readers.
+          Storybooks, 3D AR stories and flashcards in Filipino and English, made for young readers.
         </Text>
       </View>
       <Btn label="Get started" icon="sparkles" big onPress={() => router.push('/signup')} />

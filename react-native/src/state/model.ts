@@ -6,8 +6,13 @@ export type Progress = { page: number; finished?: boolean; stars?: number; lastR
 export type ScoreEntry = { score: number; english: boolean };
 export type QuizResult = { correct: number; total: number };
 export type Draft = { id: string; title: string; language: string; character: string; place: string; pages: number; texts: string[] };
+/** A flashcard the learner made by scanning an object (Figure 7). */
+export type MadeCard = { id: string; fil: string; eng: string; lang: 'English' | 'Filipino'; photo?: string; made: number };
 export type Account = {
   progress: Record<string, Progress>;
+  cards: MadeCard[];
+  scans: { day: string; used: number }; // flashcard scans used today (daily limit)
+  words: string[]; // vocabulary words practiced in Read & Learn
   lessonsDone: number;
   drafts: Draft[];
   saved: string[];
@@ -43,7 +48,7 @@ export type SavedState = { user: User | null; avatarColor: string; settings: Set
 // v3: the app now has only Butit Kulit, so saved progress on the old sample stories is dropped.
 export const STORAGE_KEY = 'basa-kita:state:v3';
 
-export const EMPTY_ACCOUNT: Account = { progress: {}, lessonsDone: 0, drafts: [], saved: [], scores: {}, quizzes: {}, sample: false };
+export const EMPTY_ACCOUNT: Account = { progress: {}, cards: [], scans: { day: '', used: 0 }, words: [], lessonsDone: 0, drafts: [], saved: [], scores: {}, quizzes: {}, sample: false };
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -54,6 +59,9 @@ export function sampleAccount(now = Date.now()): Account {
     progress: {
       'butit-kulit': { page: 8, finished: true, stars: 3, lastRead: daysAgo(0.1) },
     },
+    cards: [],
+    scans: { day: '', used: 0 },
+    words: ['aso', 'gatas'],
     saved: ['butit-kulit'],
     scores: {
       'butit-kulit:1': { score: 80, english: false }, 'butit-kulit:2': { score: 74, english: false },
@@ -114,6 +122,18 @@ export const toggleSaved = (a: Account, id: string): Account =>
 export const recordQuiz = (a: Account, id: string, correct: number, total: number): Account =>
   ({ ...a, quizzes: { ...a.quizzes, [id]: { correct, total } } });
 export const completeLesson = (a: Account): Account => ({ ...a, lessonsDone: a.lessonsDone + 1 });
+
+// Flashcards (Figure 7): five scans a day.
+export const DAILY_SCANS = 5;
+export const today = (now = Date.now()) => new Date(now).toISOString().slice(0, 10);
+export const scansLeft = (a: Account, now = Date.now()) => DAILY_SCANS - (a.scans?.day === today(now) ? a.scans.used : 0);
+export const addCard = (a: Account, card: Omit<MadeCard, 'id' | 'made'>, now = Date.now()): Account => ({
+  ...a,
+  cards: [{ ...card, id: `card-${now}`, made: now }, ...(a.cards ?? [])],
+  scans: { day: today(now), used: DAILY_SCANS - scansLeft(a, now) + 1 },
+});
+export const practiceWord = (a: Account, word: string): Account =>
+  (a.words ?? []).includes(word) ? a : { ...a, words: [...(a.words ?? []), word] };
 
 // Helpers shared by screens.
 export const isNewReader = (progress: Record<string, Progress>) => !Object.values(progress).some((p) => p.finished);

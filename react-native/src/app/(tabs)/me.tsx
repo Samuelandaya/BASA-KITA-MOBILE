@@ -1,44 +1,41 @@
+import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
-import { LESSONS } from '../../content';
 import { STORIES } from '../../content';
-import { LEVELS, learnerLevel } from '../../shared/learner.js';
 import { useApp } from '../../state/AppState';
 import type { Settings } from '../../state/model';
-import { Bar, Btn, Card, Page, Seg, Tag } from '../../ui/kit';
-import { C, T, levelBg, levelFg } from '../../ui/theme';
+import { Bar, Btn, Card, Page, Seg } from '../../ui/kit';
+import { C, T } from '../../ui/theme';
 
-const pctText = (n: number | null) => (n == null ? 'Not yet' : `${n}%`);
-
-/** Me: learner level and skills, a few reading settings, and log out. */
+/** Me (Figure 5): the learner's profile and progress, Edit Profile, reading settings, and Log Out. */
 export default function Me() {
   const app = useApp();
-  const level = learnerLevel(app.account);
-  const sk = level.skills;
+  const [askOut, setAskOut] = useState(false);
   const set = (patch: Partial<Settings>) => app.updateSettings(patch);
+  const finished = STORIES.filter((s) => app.account.progress[s.id]?.finished).length;
+  const name = `${app.user?.firstName ?? ''} ${app.user?.lastName ?? ''}`.trim();
 
   return (
     <Page>
-      <Text style={T.head(28, C.navy, 'Bold')}>{app.user?.firstName} {app.user?.lastName}</Text>
-      <Card>
-        <View style={st.row}>
-          <Text style={[T.head(20), { flex: 1 }]}>My reading level</Text>
-          <Tag text={level.name} bg={levelBg(level.name)} fg={levelFg(level.name)} />
+      <Text style={T.head(28, C.navy, 'Bold')}>My Profile</Text>
+      <Card style={st.row}>
+        <View style={st.avatar}><Text style={T.head(28, C.white, 'Bold')}>{(name || 'R').charAt(0).toUpperCase()}</Text></View>
+        <View style={{ flex: 1 }}>
+          <Text style={T.head(20, C.navy, 'Bold')}>{name || 'Reader'}</Text>
+          <Text style={T.body(13, C.muted)}>{app.user?.email}</Text>
         </View>
-        <Text style={T.body(14, C.muted)}>{LEVELS[level.index].goal}</Text>
-        <Bar pct={level.toNext} color={C.orange} />
-        <Text style={T.body(12, C.muted)}>{level.next ? `${level.toNext}% of the way to ${level.next}` : 'Top level reached!'}</Text>
+        <Btn label="Edit profile" kind="blue" onPress={() => router.push('/edit-profile')} />
       </Card>
       <Card>
-        <Text style={T.head(20)}>My skills</Text>
-        <Skill label="Stories finished" value={String(STORIES.filter((s) => app.account.progress[s.id]?.finished).length)} />
-        <Skill label="Letter sounds" value={`${app.account.lessonsDone} of ${LESSONS.length}`} />
-        <Skill label="Reading aloud" value={pctText(sk.reading)} />
-        <Skill label="Understanding" value={pctText(sk.understanding)} />
+        <Text style={T.head(20)}>My progress</Text>
+        <Text style={T.body(14, C.muted)}>You’re doing great! Keep exploring and learning.</Text>
+        <Stat label="Storybooks completed" value={`${finished} of ${STORIES.length}`} />
+        <Bar pct={(finished * 100) / Math.max(1, STORIES.length)} />
+        <Stat label="Flashcards made" value={String(app.account.cards?.length ?? 0)} />
+        <Stat label="Words practiced" value={String(app.account.words?.length ?? 0)} />
       </Card>
       <Card>
         <Text style={T.head(20)}>Reading settings</Text>
-        <Text style={T.body(14, C.ink, 'ExtraBold')}>Language</Text>
-        <Seg options={['Filipino', 'English', 'Bilingual'] as Settings['language'][]} value={app.settings.language} label={(v) => (v === 'Bilingual' ? 'Both' : v)} onChange={(language) => set({ language, languageChosen: true })} />
         <Text style={T.body(14, C.ink, 'ExtraBold')}>Text size</Text>
         <Seg options={['Normal', 'Big', 'Bigger'] as Settings['textSize'][]} value={app.settings.textSize} onChange={(textSize) => set({ textSize })} />
         <Text style={T.body(14, C.ink, 'ExtraBold')}>Reading speed</Text>
@@ -46,12 +43,22 @@ export default function Me() {
         <Toggle label="Read each page out loud" value={app.settings.narration} onChange={(narration) => set({ narration })} />
         <Toggle label="Highlight words while reading" value={app.settings.highlight} onChange={(highlight) => set({ highlight })} />
       </Card>
-      <Btn label="Log out" icon="log-out-outline" kind="white" onPress={app.logout} />
+      {askOut ? (
+        <Card color={C.cream2}>
+          <Text style={T.head(20, C.navy, 'Bold')}>Log out of BASA-KITA?</Text>
+          <View style={st.row}>
+            <Btn label="Stay" kind="white" onPress={() => setAskOut(false)} style={{ flex: 1 }} />
+            <Btn label="Log out" onPress={app.logout} style={{ flex: 1 }} />
+          </View>
+        </Card>
+      ) : (
+        <Btn label="Log out" icon="log-out-outline" kind="white" onPress={() => setAskOut(true)} />
+      )}
     </Page>
   );
 }
 
-function Skill({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View style={st.row}>
       <Text style={[T.body(15), { flex: 1 }]}>{label}</Text>
@@ -69,4 +76,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   );
 }
 
-const st = StyleSheet.create({ row: { flexDirection: 'row', alignItems: 'center', gap: 10 } });
+const st = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: C.orange, alignItems: 'center', justifyContent: 'center' },
+});
